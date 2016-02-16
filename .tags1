@@ -4,15 +4,21 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-__author__	/home/brad/src/minecraft-agent/room_info_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:11
-logger	/home/brad/src/minecraft-agent/room_info_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:13
-MIN_X	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_X = 0$/;"	variable	line:17
-MIN_Y	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_Y = 100$/;"	variable	line:18
-MIN_Z	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_Z = 0$/;"	variable	line:19
-MAX_X	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MAX_X = 9$/;"	variable	line:21
-MAX_Y	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MAX_Y = 105$/;"	variable	line:22
-MAX_Z	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MAX_Z = 9$/;"	variable	line:23
-TestRoomPlugin	/home/brad/src/minecraft-agent/room_info_plugin.py	/^class TestRoomPlugin(PluginBase):$/;"	class	line:27
-requires	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo')$/;"	variable	line:29	class:TestRoomPlugin
-events	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    events = {$/;"	variable	line:31	class:TestRoomPlugin
-__init__	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:35	class:TestRoomPlugin
+__author__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:18
+logger	/home/brad/src/minecraft-agent/test_room_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:20
+MIN_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_X = -70$/;"	variable	line:24
+MIN_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Y = 13$/;"	variable	line:25
+MIN_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Z = -54$/;"	variable	line:26
+MAX_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_X = -62$/;"	variable	line:28
+MAX_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Y = 15$/;"	variable	line:29
+MAX_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Z = -38$/;"	variable	line:30
+START_COORDS	/home/brad/src/minecraft-agent/test_room_plugin.py	/^START_COORDS = (-66,13,-39)$/;"	variable	line:32
+TestRoomPlugin	/home/brad/src/minecraft-agent/test_room_plugin.py	/^class TestRoomPlugin(PluginBase):$/;"	class	line:36
+requires	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo')$/;"	variable	line:38	class:TestRoomPlugin
+events	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    events = {$/;"	variable	line:40	class:TestRoomPlugin
+__init__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:46	class:TestRoomPlugin
+handle_block_update	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def handle_block_update(self, name, data):$/;"	member	line:64	class:TestRoomPlugin
+in_range	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def in_range(x, y, z):$/;"	member	line:68	class:TestRoomPlugin
+is_obstacle	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_obstacle(x, y, z):$/;"	member	line:83	class:TestRoomPlugin
+is_gap	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_gap(x, y, z):$/;"	member	line:91	class:TestRoomPlugin
+is_traversable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_traversable(x, y, z):$/;"	member	line:98	class:TestRoomPlugin

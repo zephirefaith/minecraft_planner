@@ -28,6 +28,7 @@ class TestAgentPlugin(PluginBase):
 
     requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',
                 'Interact', 'Chat')
+
     events = {
         'client_join_game':     'handle_client_join',
         'inventory_synced':     'handle_inventory',
