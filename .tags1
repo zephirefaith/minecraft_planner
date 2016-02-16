@@ -1,0 +1,18 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+__author__	/home/brad/src/minecraft-agent/room_info_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:11
+logger	/home/brad/src/minecraft-agent/room_info_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:13
+MIN_X	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_X = 0$/;"	variable	line:17
+MIN_Y	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_Y = 100$/;"	variable	line:18
+MIN_Z	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_Z = 0$/;"	variable	line:19
+MAX_X	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MAX_X = 9$/;"	variable	line:21
+MAX_Y	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MAX_Y = 105$/;"	variable	line:22
+MAX_Z	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MAX_Z = 9$/;"	variable	line:23
+TestRoomPlugin	/home/brad/src/minecraft-agent/room_info_plugin.py	/^class TestRoomPlugin(PluginBase):$/;"	class	line:27
+requires	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo')$/;"	variable	line:29	class:TestRoomPlugin
+events	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    events = {$/;"	variable	line:31	class:TestRoomPlugin
+__init__	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:35	class:TestRoomPlugin

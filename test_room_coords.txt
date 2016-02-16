@@ -1,0 +1,10 @@
+spawn block i.e. below feet:
+(-66,13,-39)
+
+Corners, including wall and floor blocks
+(-70,13,-38)
+(-62,13,-38)
+(-62,13,-54)
+(-70,13,-54)
+
+Y-max is 15
