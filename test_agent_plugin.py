@@ -43,6 +43,7 @@ class TestAgentPlugin(PluginBase):
         # starting location of agent
         self.start_coords = Vector3(-66,13,-39)
         self.end_coords = Vector3(-66,13,-42)
+
         logger.info("test agent plugin loaded")
         #frequency = 5  # in seconds
         #self.timers.reg_event_timer(frequency, self.periodic_event_handler)
@@ -58,7 +59,7 @@ class TestAgentPlugin(PluginBase):
         self.chat.chat('agent has arrived at start location: {0}'.format(self.start_coords))
 
         print ("attempting to do search:")
-        print (self.testroom.is_reachable(self.start_coords,self.end_coords))
+
 
 
     def handle_inventory(self, name, data):
@@ -66,10 +67,13 @@ class TestAgentPlugin(PluginBase):
         self.select_block(5)
 
 
+
     def handle_chat(self, name, data):
         """ Called when a chat message occurs in the game
             Allows using custom chat commands to control the bot"""
 
+        print("test agent block at start coords: {0}".format(self.world.get_block((-63.,15.,-54.))))
+        #print (self.testroom.is_reachable(self.start_coords,self.end_coords))
         #logger.info('Chat message received: {0}'.format(data))
         ############################
         # control related code here
