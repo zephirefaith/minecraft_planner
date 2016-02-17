@@ -18,16 +18,17 @@ from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
-__author__ = 'Cosmo Harrigan, Morgan Creekmore, Bradley Sheneman'
+from test_room_plugin import TestRoomPlugin
+
+__author__ = 'Bradley Sheneman'
 
 logger = logging.getLogger('spockbot')
 
-# Required class decorator
 @pl_announce('TestAgentPlugin')
 class TestAgentPlugin(PluginBase):
 
     requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',
-                'Interact', 'Chat')
+                'Interact', 'Chat','TestRoom')
 
     events = {
         'client_join_game':     'handle_client_join',
@@ -37,22 +38,27 @@ class TestAgentPlugin(PluginBase):
 
 
     def __init__(self, ploader, settings):
-        super(ExamplePlugin, self).__init__(ploader, settings)
+        super(TestAgentPlugin, self).__init__(ploader, settings)
 
         # starting location of agent
-        self.target_coords = Vector3(10., 2., 10.)
-
-        frequency = 5  # in seconds
-        self.timers.reg_event_timer(frequency, self.periodic_event_handler)
+        self.start_coords = Vector3(-66,13,-39)
+        self.end_coords = Vector3(-66,13,-42)
+        logger.info("test agent plugin loaded")
+        #frequency = 5  # in seconds
+        #self.timers.reg_event_timer(frequency, self.periodic_event_handler)
 
 
     def handle_client_join(self, name, data):
         """ Verifies agent has started correctly, then
             moves to starting location (i.e. the room)."""
 
-        self.chat.chat('agent is moving to start location...')
-        self.movement.move_to(*TARGET_COORDINATES)
-        self.chat.chat('agent has arrived at start location.')
+        print("client joined game...")
+        self.chat.chat('agent is initialized...')
+        self.movement.move_to(self.start_coords)
+        self.chat.chat('agent has arrived at start location: {0}'.format(self.start_coords))
+
+        print ("attempting to do search:")
+        print (self.testroom.is_reachable(self.start_coords,self.end_coords))
 
 
     def handle_inventory(self, name, data):
@@ -64,7 +70,7 @@ class TestAgentPlugin(PluginBase):
         """ Called when a chat message occurs in the game
             Allows using custom chat commands to control the bot"""
 
-        logger.info('Chat message received: {0}'.format(data))
+        #logger.info('Chat message received: {0}'.format(data))
         ############################
         # control related code here
         ############################

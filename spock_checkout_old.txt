@@ -1,0 +1,4 @@
+
+The latest spock code has broken the auth module.  You want to go back to a prior baseline by running this:
+
+ git checkout 5263efc5bc86a1d06e16cb0e57ca8cc8cac599c0 

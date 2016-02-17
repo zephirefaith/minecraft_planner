@@ -12,16 +12,6 @@ perform_initial_actions	/home/brad/src/minecraft-agent/example_plugin.py	/^    d
 chat_event_handler	/home/brad/src/minecraft-agent/example_plugin.py	/^    def chat_event_handler(self, name, data):$/;"	member	line:40	class:ExamplePlugin
 hold_block	/home/brad/src/minecraft-agent/example_plugin.py	/^    def hold_block(self, name, data):$/;"	member	line:44	class:ExamplePlugin
 periodic_event_handler	/home/brad/src/minecraft-agent/example_plugin.py	/^    def periodic_event_handler(self):$/;"	member	line:56	class:ExamplePlugin
-__author__	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^__author__ = 'Cosmo Harrigan, Morgan Creekmore, Bradley Sheneman'$/;"	variable	line:21
-logger	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:23
-TestAgentPlugin	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^class TestAgentPlugin(PluginBase):$/;"	class	line:27
-requires	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',$/;"	variable	line:29	class:TestAgentPlugin
-events	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    events = {$/;"	variable	line:32	class:TestAgentPlugin
-__init__	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:39	class:TestAgentPlugin
-handle_client_join	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def handle_client_join(self, name, data):$/;"	member	line:49	class:TestAgentPlugin
-handle_inventory	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def handle_inventory(self, name, data):$/;"	member	line:58	class:TestAgentPlugin
-handle_chat	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def handle_chat(self, name, data):$/;"	member	line:63	class:TestAgentPlugin
-select_block	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def select_block(self, block_id):$/;"	member	line:73	class:TestAgentPlugin
 __author__	/home/brad/src/minecraft-agent/room_info_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:11
 logger	/home/brad/src/minecraft-agent/room_info_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:13
 MIN_X	/home/brad/src/minecraft-agent/room_info_plugin.py	/^MIN_X = 0$/;"	variable	line:17
@@ -34,21 +24,43 @@ TestRoomPlugin	/home/brad/src/minecraft-agent/room_info_plugin.py	/^class TestRo
 requires	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo')$/;"	variable	line:29	class:TestRoomPlugin
 events	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    events = {$/;"	variable	line:31	class:TestRoomPlugin
 __init__	/home/brad/src/minecraft-agent/room_info_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:35	class:TestRoomPlugin
-__author__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:18
-logger	/home/brad/src/minecraft-agent/test_room_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:20
-MIN_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_X = -70$/;"	variable	line:24
-MIN_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Y = 13$/;"	variable	line:25
-MIN_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Z = -54$/;"	variable	line:26
-MAX_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_X = -62$/;"	variable	line:28
-MAX_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Y = 15$/;"	variable	line:29
-MAX_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Z = -38$/;"	variable	line:30
-START_COORDS	/home/brad/src/minecraft-agent/test_room_plugin.py	/^START_COORDS = (-66,13,-39)$/;"	variable	line:32
-TestRoomPlugin	/home/brad/src/minecraft-agent/test_room_plugin.py	/^class TestRoomPlugin(PluginBase):$/;"	class	line:36
-requires	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo')$/;"	variable	line:38	class:TestRoomPlugin
-events	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    events = {$/;"	variable	line:40	class:TestRoomPlugin
-__init__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:46	class:TestRoomPlugin
-handle_block_update	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def handle_block_update(self, name, data):$/;"	member	line:64	class:TestRoomPlugin
-in_range	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def in_range(x, y, z):$/;"	member	line:68	class:TestRoomPlugin
-is_obstacle	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_obstacle(x, y, z):$/;"	member	line:83	class:TestRoomPlugin
-is_gap	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_gap(x, y, z):$/;"	member	line:91	class:TestRoomPlugin
-is_traversable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_traversable(x, y, z):$/;"	member	line:98	class:TestRoomPlugin
+__author__	/home/brad/src/minecraft-agent/test_agent.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:17
+logger	/home/brad/src/minecraft-agent/test_agent.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:19
+USERNAME	/home/brad/src/minecraft-agent/test_agent.py	/^USERNAME = 'Bot'$/;"	variable	line:25
+SERVER	/home/brad/src/minecraft-agent/test_agent.py	/^SERVER = 'localhost'$/;"	variable	line:27
+settings	/home/brad/src/minecraft-agent/test_agent.py	/^settings = {$/;"	variable	line:29
+plugins	/home/brad/src/minecraft-agent/test_agent.py	/^plugins = default_plugins$/;"	variable	line:37
+client	/home/brad/src/minecraft-agent/test_agent.py	/^client = Client(plugins=plugins, settings=settings)$/;"	variable	line:44
+__author__	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:23
+logger	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:25
+TestAgentPlugin	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^class TestAgentPlugin(PluginBase):$/;"	class	line:28
+requires	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',$/;"	variable	line:30	class:TestAgentPlugin
+events	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    events = {$/;"	variable	line:33	class:TestAgentPlugin
+__init__	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:40	class:TestAgentPlugin
+handle_client_join	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def handle_client_join(self, name, data):$/;"	member	line:51	class:TestAgentPlugin
+handle_inventory	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def handle_inventory(self, name, data):$/;"	member	line:64	class:TestAgentPlugin
+handle_chat	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def handle_chat(self, name, data):$/;"	member	line:69	class:TestAgentPlugin
+select_block	/home/brad/src/minecraft-agent/test_agent_plugin.py	/^    def select_block(self, block_id):$/;"	member	line:79	class:TestAgentPlugin
+__author__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:20
+logger	/home/brad/src/minecraft-agent/test_room_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:22
+MIN_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_X = -70$/;"	variable	line:26
+MIN_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Y = 13$/;"	variable	line:27
+MIN_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Z = -54$/;"	variable	line:28
+MAX_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_X = -62$/;"	variable	line:30
+MAX_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Y = 15$/;"	variable	line:31
+MAX_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Z = -38$/;"	variable	line:32
+START_COORDS	/home/brad/src/minecraft-agent/test_room_plugin.py	/^START_COORDS = (-66,13,-39)$/;"	variable	line:34
+TestRoomCore	/home/brad/src/minecraft-agent/test_room_plugin.py	/^class TestRoomCore(object):$/;"	class	line:38
+__init__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def __init__(self, world, dims):$/;"	member	line:39	class:TestRoomCore
+is_reachable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_reachable(self, pos0, pos1):$/;"	member	line:43	class:TestRoomCore
+is_obstacle	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_obstacle(self, x, y, z):$/;"	member	line:54	class:TestRoomCore
+is_gap	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_gap(self, x, y, z):$/;"	member	line:62	class:TestRoomCore
+is_traversable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_traversable(self, pos):$/;"	member	line:69	class:TestRoomCore
+compute_path	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def compute_path(self, pos0, pos1, max_depth):$/;"	member	line:77	class:TestRoomCore
+get_neighbors	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def get_neighbors(self, pos):$/;"	member	line:139	class:TestRoomCore
+TestRoomPlugin	/home/brad/src/minecraft-agent/test_room_plugin.py	/^class TestRoomPlugin(PluginBase):$/;"	class	line:146
+requires	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo', 'Event')$/;"	variable	line:148	class:TestRoomPlugin
+events	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    events = {$/;"	variable	line:150	class:TestRoomPlugin
+__init__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:156	class:TestRoomPlugin
+handle_block_update	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def handle_block_update(self, name, data):$/;"	member	line:180	class:TestRoomPlugin
+in_range	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def in_range(self, x, y, z):$/;"	member	line:183	class:TestRoomPlugin
