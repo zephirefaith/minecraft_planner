@@ -10,14 +10,6 @@ Credit goes to [Yi-Shan](https://github.com/chenesan) for the original version o
 
 Recommended: Ubuntu Trusty (14.04).
 
-####ROS http://www.ros.org/
-
-As of (August 23, 2015) ROS indigo is the only distro tested with the bot.
-
-Install instruction for ROS indigo are [here](http://wiki.ros.org/indigo/Installation/Ubuntu).
-
-After installing ROS you have to create a workspace ([tutorial](http://wiki.ros.org/catkin/Tutorials/create_a_workspace)) and install the minecraft_bot package, by following the instructions in the [official tutorial](http://wiki.ros.org/catkin/Tutorials/CreatingPackage) and project specific instructions in [minecraft_bot](https://github.gatech.edu/bsheneman3/minecraft-bot/blob/master/minecraft_bot).
-
 ####Minecraft server https://minecraft.net/download
 
 Installation instructions for the Minecraft server are [here](http://minecraft.gamepedia.com/Tutorials/Setting_up_a_server)
@@ -25,6 +17,7 @@ Installation instructions for the Minecraft server are [here](http://minecraft.g
 You can also choose other Minecraft server managers. Code has not been tested with the integrated server used in single player.
 
 ####Spock
+version 0.1.3
 
 A python API to connect with Minecraft server.
 

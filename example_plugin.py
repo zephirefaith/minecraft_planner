@@ -1,3 +1,38 @@
+"""
+An example plugin for spockbot
+
+Demonstrates the following functionality:
+- Receiving chat messages
+- Sending chat commands
+- Using inventory
+- Moving to location
+- Triggering a periodic event using a timer
+- Registering for an event upon startup
+- Placing blocks
+- Reading blocks
+"""
+
+__author__ = 'Cosmo Harrigan, Morgan Creekmore'
+
+
+import logging
+
+# Import any modules that you need in your plugin
+from spockbot.mcdata import blocks
+from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
+from spockbot.vector import Vector3
+
+# Required import
+
+logger = logging.getLogger('spockbot')
+
+# The bot will walk to this starting position. Set it to a sensible
+# location for your world file. The format is: (x, y, z)
+TARGET_COORDINATES = Vector3(-43, 12, -56)
+
+
+# Required class decorator
 @pl_announce('ExamplePlugin')
 class ExamplePlugin(PluginBase):
     # Require other plugins that you want use later in the plugin
@@ -35,7 +70,9 @@ class ExamplePlugin(PluginBase):
         self.chat.chat('Bot active')
 
         # Walk to target coordinates
-        self.movement.move_to(*TARGET_COORDINATES)
+        self.movement.move_to(TARGET_COORDINATES.x,
+                              TARGET_COORDINATES.y,
+                              TARGET_COORDINATES.z)
 
     def chat_event_handler(self, name, data):
         """Called when a chat message occurs in the game"""
@@ -62,12 +99,14 @@ class ExamplePlugin(PluginBase):
             self.clientinfo.position.yaw))
 
         # Place a block in front of the player
-        self.interact.place_block(
-            self.clientinfo.position + Vector3(-1, 0, -1))
+        self.interact.place_block(self.clientinfo.position
+                                  + Vector3(-1, -1, 0))
 
         # Read a block under the player
-        block_pos = self.clientinfo.position.floor()
-        block_id, meta = self.world.get_block(*block_pos)
+        block_pos = self.clientinfo.position
+        block_id, meta = self.world.get_block(block_pos.x,
+                                              block_pos.y,
+                                              block_pos.z)
         block_at = blocks.get_block(block_id, meta)
-        self.chat.chat('Found block %s at %s' % (
-            block_at.display_name, block_pos))
+        self.chat.chat('Found block %s at %s' % (block_at.display_name,
+                                                 block_pos))

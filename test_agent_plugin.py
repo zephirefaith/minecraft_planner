@@ -33,7 +33,7 @@ class TestAgentPlugin(PluginBase):
     events = {
         'client_join_game':     'handle_client_join',
         'inventory_synced':     'handle_inventory',
-        'PLAY<Chat Message':    'handle_chat',
+        'chat':                 'handle_chat',
     }
 
 
@@ -41,8 +41,9 @@ class TestAgentPlugin(PluginBase):
         super(TestAgentPlugin, self).__init__(ploader, settings)
 
         # starting location of agent
-        self.start_coords = Vector3(-66,13,-39)
-        self.end_coords = Vector3(-66,13,-42)
+        #self.start_coords = Vector3(-66,13,-39)
+        self.start_coords = (-56,13,-50)
+        #self.end_coords = Vector3(-66,13,-42)
 
         logger.info("test agent plugin loaded")
         #frequency = 5  # in seconds
@@ -55,7 +56,7 @@ class TestAgentPlugin(PluginBase):
 
         print("client joined game...")
         self.chat.chat('agent is initialized...')
-        self.movement.move_to(self.start_coords)
+        self.movement.move_to(*self.start_coords)
         self.chat.chat('agent has arrived at start location: {0}'.format(self.start_coords))
 
         print ("attempting to do search:")
@@ -71,10 +72,12 @@ class TestAgentPlugin(PluginBase):
     def handle_chat(self, name, data):
         """ Called when a chat message occurs in the game
             Allows using custom chat commands to control the bot"""
-
-        print("test agent block at start coords: {0}".format(self.world.get_block((-63.,15.,-54.))))
-        #print (self.testroom.is_reachable(self.start_coords,self.end_coords))
-        #logger.info('Chat message received: {0}'.format(data))
+        #print("test agent block at start coords: {0}".format(self.world.get_block(-63.,15.,-54.)))
+        #print("Chat text received: {}".format(data['message']))
+        message = data['message']
+        logger.info('Chat message received: {}'.format(message))
+        if message == 'move to coords':
+            self.movement.move_to(*self.start_coords)
         ############################
         # control related code here
         ############################
