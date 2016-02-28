@@ -4,26 +4,21 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-__author__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:20
-logger	/home/brad/src/minecraft-agent/test_room_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:22
-MIN_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_X = -70$/;"	variable	line:26
-MIN_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Y = 13$/;"	variable	line:27
-MIN_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MIN_Z = -54$/;"	variable	line:28
-MAX_X	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_X = -62$/;"	variable	line:30
-MAX_Y	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Y = 15$/;"	variable	line:31
-MAX_Z	/home/brad/src/minecraft-agent/test_room_plugin.py	/^MAX_Z = -38$/;"	variable	line:32
-START_COORDS	/home/brad/src/minecraft-agent/test_room_plugin.py	/^START_COORDS = (-66,14,-39)$/;"	variable	line:34
-TestRoomCore	/home/brad/src/minecraft-agent/test_room_plugin.py	/^class TestRoomCore(object):$/;"	class	line:38
-__init__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def __init__(self, world, dims):$/;"	member	line:39	class:TestRoomCore
-TestRoomPlugin	/home/brad/src/minecraft-agent/test_room_plugin.py	/^class TestRoomPlugin(PluginBase):$/;"	class	line:46
-requires	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    requires = ('Timers', 'World', 'ClientInfo', 'Event')$/;"	variable	line:48	class:TestRoomPlugin
-events	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    events = {$/;"	variable	line:50	class:TestRoomPlugin
-__init__	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:56	class:TestRoomPlugin
-handle_block_update	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def handle_block_update(self, name, data):$/;"	member	line:80	class:TestRoomPlugin
-in_range	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def in_range(self, x, y, z):$/;"	member	line:100	class:TestRoomPlugin
-is_reachable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_reachable(self, pos0, pos1):$/;"	member	line:110	class:TestRoomPlugin
-is_obstacle	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_obstacle(self, x, y, z):$/;"	member	line:122	class:TestRoomPlugin
-is_gap	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_gap(self, x, y, z):$/;"	member	line:130	class:TestRoomPlugin
-is_traversable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_traversable(self, pos):$/;"	member	line:137	class:TestRoomPlugin
-compute_path	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def compute_path(self, pos0, pos1, max_depth):$/;"	member	line:144	class:TestRoomPlugin
-get_neighbors	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def get_neighbors(self, pos):$/;"	member	line:205	class:TestRoomPlugin
+__author__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:25
+logger	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:26
+NORTH	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^NORTH = 0$/;"	variable	line:30
+WEST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^WEST = 90$/;"	variable	line:31
+SOUTH	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^SOUTH = 180$/;"	variable	line:32
+EAST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EAST = 270$/;"	variable	line:33
+EPSILON_DIST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EPSILON_DIST = 0.1$/;"	variable	line:35
+EPSILON_DIR	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EPSILON_DIR  = 1.0$/;"	variable	line:36
+SelfMovementSensorPlugin	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^class SelfMovementSensorPlugin(PluginBase):$/;"	class	line:39
+requires	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',$/;"	variable	line:41	class:SelfMovementSensorPlugin
+events	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    events = {$/;"	variable	line:44	class:SelfMovementSensorPlugin
+__init__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:53	class:SelfMovementSensorPlugin
+sensor_timer_tick	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def sensor_timer_tick(self):$/;"	member	line:72	class:SelfMovementSensorPlugin
+handle_update_sensors	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def handle_update_sensors(self):$/;"	member	line:75	class:SelfMovementSensorPlugin
+get_nearest_direction	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def get_nearest_direction(self, yaw):$/;"	member	line:81	class:SelfMovementSensorPlugin
+get_nearest_position	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def get_nearest_position(x, y, z):$/;"	member	line:91	class:SelfMovementSensorPlugin
+is_turning	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def is_turning():$/;"	member	line:97	class:SelfMovementSensorPlugin
+is_moving	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def is_moving():$/;"	member	line:104	class:SelfMovementSensorPlugin

@@ -24,7 +24,7 @@ __author__ = 'Bradley Sheneman'
 
 logger = logging.getLogger('spockbot')
 
-@pl_announce('TestAgentPlugin')
+@pl_announce('TestAgent')
 class TestAgentPlugin(PluginBase):
 
     requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',

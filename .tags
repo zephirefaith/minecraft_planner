@@ -64,3 +64,21 @@ is_gap	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_gap(self,
 is_traversable	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def is_traversable(self, pos):$/;"	member	line:137	class:TestRoomPlugin
 compute_path	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def compute_path(self, pos0, pos1, max_depth):$/;"	member	line:144	class:TestRoomPlugin
 get_neighbors	/home/brad/src/minecraft-agent/test_room_plugin.py	/^    def get_neighbors(self, pos):$/;"	member	line:205	class:TestRoomPlugin
+__author__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:25
+logger	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:26
+NORTH	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^NORTH = 0$/;"	variable	line:30
+WEST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^WEST = 90$/;"	variable	line:31
+SOUTH	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^SOUTH = 180$/;"	variable	line:32
+EAST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EAST = 270$/;"	variable	line:33
+EPSILON_DIST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EPSILON_DIST = 0.1$/;"	variable	line:35
+EPSILON_DIR	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EPSILON_DIR  = 1.0$/;"	variable	line:36
+SelfMovementSensorPlugin	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^class SelfMovementSensorPlugin(PluginBase):$/;"	class	line:39
+requires	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',$/;"	variable	line:41	class:SelfMovementSensorPlugin
+events	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    events = {$/;"	variable	line:44	class:SelfMovementSensorPlugin
+__init__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:53	class:SelfMovementSensorPlugin
+sensor_timer_tick	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def sensor_timer_tick(self):$/;"	member	line:72	class:SelfMovementSensorPlugin
+handle_update_sensors	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def handle_update_sensors(self):$/;"	member	line:75	class:SelfMovementSensorPlugin
+get_nearest_direction	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def get_nearest_direction(self, yaw):$/;"	member	line:81	class:SelfMovementSensorPlugin
+get_nearest_position	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def get_nearest_position(x, y, z):$/;"	member	line:91	class:SelfMovementSensorPlugin
+is_turning	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def is_turning():$/;"	member	line:97	class:SelfMovementSensorPlugin
+is_moving	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def is_moving():$/;"	member	line:104	class:SelfMovementSensorPlugin
