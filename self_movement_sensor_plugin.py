@@ -1,44 +1,18 @@
-"""
-An example plugin for spockbot
-
-Demonstrates the following functionality:
-- Receiving chat messages
-- Sending chat commands
-- Using inventory
-- Moving to location
-- Triggering a periodic event using a timer
-- Registering for an event upon startup
-- Placing blocks
-- Reading blocks
-"""
 import logging
-import math
 
 from spockbot.mcdata import blocks
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
-from test_room_plugin import TestRoomPlugin
-
+from utils.constants import *
+import utils.movement_utils as mvu
 
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
-
 # tick frequency for movement sensor
 FREQUENCY = 1
-
-# compass directions in yaw values
-NORTH = 0
-WEST = 90
-SOUTH = 180
-EAST = 270
-
-# acceptable error to test whether agent has stopped moving
-EPSILON_DIST = 1./10
-EPSILON_DIR  = 90./10
-
 
 # probably make this a subclass of some generic agent state
 class AgentMovementState:
@@ -55,15 +29,12 @@ class AgentMovementState:
 @pl_announce('SelfMovementSensor')
 class SelfMovementSensorPlugin(PluginBase):
 
-    requires = ('Event', 'Timers', 'ClientInfo', 'World', 'Movement',
-                'Inventory', 'Interact',
-    )
+    requires = ('Event', 'Timers', 'ClientInfo',)
+
     events = {
         'movement_position_reset':  'handle_position_reset',
         'movement_path_done':       'handle_path_done',
         'client_join_game':         'handle_client_join',
-        #'inventory_synced':         'handle_inventory',
-        #'chat':                     'handle_chat',
     }
 
 
@@ -91,7 +62,7 @@ class SelfMovementSensorPlugin(PluginBase):
         self.handle_update_sensors()
 
         # TODO: This has to be called with some data. e.g. formatted state
-        self.event.emit('agent_movement_state')
+        self.event.emit('agent_position_state')
 
 
     def handle_client_join(self, name, data):
@@ -101,14 +72,14 @@ class SelfMovementSensorPlugin(PluginBase):
 
     def handle_update_sensors(self):
         pos = self.clientinfo.position
-        self.state.facing = self.get_nearest_direction(pos.yaw)
-        x,y,z = self.get_nearest_position(pos.x, pos.y, pos.z)
+        self.state.facing = mvu.get_nearest_direction(pos.yaw)
+        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
         self.state.pos = Vector3(x,y,z)
 
         self.state.turning = self.is_turning()
         self.state.moving = self.is_moving()
 
-        self.log_agent_state(self.state)
+        mvu.log_agent_state(self.state)
 
 
     def handle_position_reset(self, name, data):
@@ -120,23 +91,8 @@ class SelfMovementSensorPlugin(PluginBase):
 
 
     #########################################################################
-    # Utility functions for updating personal state
+    # Helper unctions for updating internal agent state
     #########################################################################
-    def get_nearest_direction(self, yaw):
-        deg_from = [(abs(NORTH - yaw),'NORTH'),
-                    (abs(SOUTH - yaw),'SOUTH'),
-                    (abs(WEST - yaw), 'WEST'),
-                    (abs(EAST - yaw), 'EAST'),]
-        diff,facing = min(deg_from)
-        logger.debug("facing {} with a deviation of {}".format(facing, diff))
-        return facing
-
-
-    def get_nearest_position(self, x, y, z):
-        pos = (math.floor(x),math.floor(y),math.floor(z))
-        logger.debug("at position {} with original {}".format(pos, (x,y,z)))
-        return pos
-
 
     def is_turning(self):
         if self.absolute_dir is None:
@@ -159,15 +115,3 @@ class SelfMovementSensorPlugin(PluginBase):
         if dist > EPSILON_DIST:
             return True
         return False
-
-
-    def log_agent_state(self, agent_state):
-        logger.info(
-            "current state:\n<x:{}, y:{}, z:{}, facing:{}, moving:{}, turning:{}>\n".format(
-                agent_state.pos.x,
-                agent_state.pos.y,
-                agent_state.pos.z,
-                agent_state.facing,
-                agent_state.moving,
-                agent_state.turning,)
-        )
