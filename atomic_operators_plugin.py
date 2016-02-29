@@ -25,7 +25,7 @@ class AtomicOperatorsPlugin(PluginBase):
 
     def __init__(self, ploader, settings):
         super(AtomicOperatorsPlugin, self).__init__(ploader, settings)
-
+        ploader.provides('AtomicOperators',self)
 
     #########################################################################
     # Egocentric movement operators
@@ -36,40 +36,42 @@ class AtomicOperatorsPlugin(PluginBase):
         pos = self.clientinfo.position
         facing = mvu.get_nearest_direction(pos.yaw)
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        if facing == EAST:
+        #print("original coords: {}".format((x,y,z)))
+        if facing == 'EAST':
             x = x+1
-        elif facing == WEST:
+        elif facing == 'WEST':
             x = x-1
-        elif facing == SOUTH:
+        elif facing == 'SOUTH':
             z = z+1
-        elif facing == NORTH:
+        elif facing == 'NORTH':
             z = z-1
+        #print("new coords: {}".format((x,y,z)))
         self.movement.move_to(x,y,z)
 
 
     def operator_look_left(self):
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
-        if facing == NORTH:
-            new_facing = WEST
-        elif facing == SOUTH:
-            new_facing = EAST
-        elif facing == WEST:
-            new_facing = SOUTH
-        elif facing == EAST:
-            new_facing = NORTH
+        if facing == 'NORTH':
+            new_facing = DIR_WEST
+        elif facing == 'SOUTH':
+            new_facing = DIR_EAST
+        elif facing == 'WEST':
+            new_facing = DIR_SOUTH
+        elif facing == 'EAST':
+            new_facing = DIR_NORTH
         self.interact.look(yaw=new_facing,pitch=0.0)
 
 
     def operator_look_right(self):
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
-        if facing == NORTH:
-            new_facing = EAST
-        elif facing == SOUTH:
-            new_facing = WEST
-        elif facing == WEST:
-            new_facing = NORTH
-        elif facing == EAST:
-            new_facing = SOUTH
+        if facing == 'NORTH':
+            new_facing = DIR_EAST
+        elif facing == 'SOUTH':
+            new_facing = DIR_WEST
+        elif facing == 'WEST':
+            new_facing = DIR_NORTH
+        elif facing == 'EAST':
+            new_facing = DIR_SOUTH
         self.interact.look(yaw=new_facing,pitch=0.0)
 
 
@@ -133,7 +135,7 @@ class AtomicOperatorsPlugin(PluginBase):
         # simply centers the agent and sets look direction to NORTH
         pos = self.clientinfo.position
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        self.interact.look(yaw=NORTH, pitch=0.0)
+        self.interact.look(yaw=DIR_NORTH, pitch=0.0)
         self.movement.move_to(x,y,z)
 
 

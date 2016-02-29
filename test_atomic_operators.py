@@ -14,7 +14,7 @@ __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 
-def mseq = []
+mseq = [
     "move",
     "turn_left",
     "move",
@@ -45,15 +45,16 @@ class TestAtomicOperatorsPlugin(PluginBase):
         frequency = FREQUENCY
         self.timers.reg_event_timer(frequency, self.move_sequence_tick)
         self.seq_index = 0
+        ploader.provides('TestAtomicOperators',self)
 
 
     def move_sequence_tick(self):
         if mseq[self.seq_index] == "move":
             self.atomicoperators.operator_move()
         elif mseq[self.seq_index] == "turn_left":
-            self.atomicoperators.operator_turn_left()
+            self.atomicoperators.operator_look_left()
         elif mseq[self.seq_index] == "turn_right":
-            self.atomicoperators.operator_turn_right()
+            self.atomicoperators.operator_look_right()
 
-        logger.info("agent executing command: {}".format(mseq[self.seq_index]))
+        logger.info("\n******agent executing command: {}******\n".format(mseq[self.seq_index]))
         self.seq_index = (self.seq_index+1)%len(mseq)

@@ -6,10 +6,10 @@ the Minecraft world
 """
 
 # compass directions in yaw values
-DIR_NORTH = 0
-DIR_WEST = 90
-DIR_SOUTH = 180
-DIR_EAST = 270
+DIR_SOUTH = 0
+DIR_EAST = 90
+DIR_NORTH = 180
+DIR_WEST = 270
 
 # acceptable error to test whether agent has stopped moving
 EPSILON_DIST = 1./10
