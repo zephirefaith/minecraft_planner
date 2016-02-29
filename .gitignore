@@ -2,3 +2,6 @@
 *~
 #python bytecode
 *.pyc
+
+# atom tags files
+.tags*
