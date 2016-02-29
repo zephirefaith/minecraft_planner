@@ -26,15 +26,18 @@ __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 
+# tick frequency for movement sensor
+FREQUENCY = 1
+
 # compass directions in yaw values
 NORTH = 0
 WEST = 90
 SOUTH = 180
 EAST = 270
 
-# acceptable error to see if the agent has stopped moving
-EPSILON_DIST = 0.1
-EPSILON_DIR  = 1.0
+# acceptable error to test whether agent has stopped moving
+EPSILON_DIST = 1./10
+EPSILON_DIR  = 90./10
 
 
 # probably make this a subclass of some generic agent state
@@ -52,8 +55,8 @@ class AgentMovementState:
 @pl_announce('SelfMovementSensor')
 class SelfMovementSensorPlugin(PluginBase):
 
-    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',
-                'Interact',
+    requires = ('Event', 'Timers', 'ClientInfo', 'World', 'Movement',
+                'Inventory', 'Interact',
     )
     events = {
         'movement_position_reset':  'handle_position_reset',
@@ -66,17 +69,16 @@ class SelfMovementSensorPlugin(PluginBase):
 
     def __init__(self, ploader, settings):
         super(SelfMovementSensorPlugin, self).__init__(ploader, settings)
-        logger.info("Initializing SelfMovementSensor Plugin")
 
         # the agent's records of its own motion. updates every x seconds
         # will be an integer block position, with the agent at the center
         self.state = AgentMovementState()
-        # absolute position/direction used to compute moving/turning
+        # actual position/direction used to compute moving/turning
         self.absolute_pos = None
         self.absolute_dir = None
 
         # timer to update the agent's knowledge of its own movement
-        frequency = 1
+        frequency = FREQUENCY
         self.timers.reg_event_timer(frequency, self.sensor_timer_tick)
 
 
@@ -87,6 +89,9 @@ class SelfMovementSensorPlugin(PluginBase):
     # not a normal event handler. simply triggered every x seconds
     def sensor_timer_tick(self):
         self.handle_update_sensors()
+
+        # TODO: This has to be called with some data. e.g. formatted state
+        self.event.emit('agent_movement_state')
 
 
     def handle_client_join(self, name, data):
@@ -123,13 +128,13 @@ class SelfMovementSensorPlugin(PluginBase):
                     (abs(WEST - yaw), 'WEST'),
                     (abs(EAST - yaw), 'EAST'),]
         diff,facing = min(deg_from)
-        #logger.info("facing {} with a deviation of {}".format(facing, diff))
+        logger.debug("facing {} with a deviation of {}".format(facing, diff))
         return facing
 
 
     def get_nearest_position(self, x, y, z):
         pos = (math.floor(x),math.floor(y),math.floor(z))
-        #logger.info("at position {} with original {}".format(pos, (x,y,z)))
+        logger.debug("at position {} with original {}".format(pos, (x,y,z)))
         return pos
 
 
@@ -158,7 +163,7 @@ class SelfMovementSensorPlugin(PluginBase):
 
     def log_agent_state(self, agent_state):
         logger.info(
-            "current state: <x:{},y:{},z:{},dir:{},moving:{},turning:{}>".format(
+            "current state:\n<x:{}, y:{}, z:{}, facing:{}, moving:{}, turning:{}>\n".format(
                 agent_state.pos.x,
                 agent_state.pos.y,
                 agent_state.pos.z,

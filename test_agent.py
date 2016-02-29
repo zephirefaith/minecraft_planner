@@ -18,7 +18,7 @@ from spockbot.plugins import default_plugins
 __author__ = 'Bradley Sheneman'
 
 logger = logging.getLogger('spockbot')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # this will only work if the server is set to offline mode
 # to use online mode, USERNAME and PASSWORD must be for a valid MC account

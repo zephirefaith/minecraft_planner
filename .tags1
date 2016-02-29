@@ -4,27 +4,10 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-__author__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:25
-logger	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:26
-NORTH	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^NORTH = 0$/;"	variable	line:30
-WEST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^WEST = 90$/;"	variable	line:31
-SOUTH	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^SOUTH = 180$/;"	variable	line:32
-EAST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EAST = 270$/;"	variable	line:33
-EPSILON_DIST	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EPSILON_DIST = 0.1$/;"	variable	line:36
-EPSILON_DIR	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^EPSILON_DIR  = 1.0$/;"	variable	line:37
-AgentMovementState	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^class AgentMovementState:$/;"	class	line:41
-__init__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def __init__(self, pos=None, facing=None, moving=None, turning=None):$/;"	member	line:42	class:AgentMovementState
-SelfMovementSensorPlugin	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^class SelfMovementSensorPlugin(PluginBase):$/;"	class	line:53
-requires	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',$/;"	variable	line:55	class:SelfMovementSensorPlugin
-events	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    events = {$/;"	variable	line:58	class:SelfMovementSensorPlugin
-__init__	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def __init__(self, ploader, settings):$/;"	member	line:67	class:SelfMovementSensorPlugin
-sensor_timer_tick	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def sensor_timer_tick(self):$/;"	member	line:88	class:SelfMovementSensorPlugin
-handle_client_join	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def handle_client_join(self, name, data):$/;"	member	line:92	class:SelfMovementSensorPlugin
-handle_update_sensors	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def handle_update_sensors(self):$/;"	member	line:97	class:SelfMovementSensorPlugin
-handle_position_reset	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def handle_position_reset(self, name, data):$/;"	member	line:109	class:SelfMovementSensorPlugin
-handle_path_done	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def handle_path_done(self, name, data):$/;"	member	line:113	class:SelfMovementSensorPlugin
-get_nearest_direction	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def get_nearest_direction(self, yaw):$/;"	member	line:120	class:SelfMovementSensorPlugin
-get_nearest_position	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def get_nearest_position(self, x, y, z):$/;"	member	line:130	class:SelfMovementSensorPlugin
-is_turning	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def is_turning(self):$/;"	member	line:136	class:SelfMovementSensorPlugin
-is_moving	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def is_moving(self):$/;"	member	line:146	class:SelfMovementSensorPlugin
-log_agent_state	/home/brad/src/minecraft-agent/self_movement_sensor_plugin.py	/^    def log_agent_state(self, agent_state):$/;"	member	line:159	class:SelfMovementSensorPlugin
+__author__	/home/brad/src/minecraft-agent/test_agent.py	/^__author__ = 'Bradley Sheneman'$/;"	variable	line:18
+logger	/home/brad/src/minecraft-agent/test_agent.py	/^logger = logging.getLogger('spockbot')$/;"	variable	line:20
+USERNAME	/home/brad/src/minecraft-agent/test_agent.py	/^USERNAME = 'Bot'$/;"	variable	line:26
+SERVER	/home/brad/src/minecraft-agent/test_agent.py	/^SERVER = 'localhost'$/;"	variable	line:28
+settings	/home/brad/src/minecraft-agent/test_agent.py	/^settings = {$/;"	variable	line:30
+plugins	/home/brad/src/minecraft-agent/test_agent.py	/^plugins = default_plugins$/;"	variable	line:38
+client	/home/brad/src/minecraft-agent/test_agent.py	/^client = Client(plugins=plugins, settings=settings)$/;"	variable	line:45
