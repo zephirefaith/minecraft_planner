@@ -9,6 +9,7 @@ import logging
 # custom plugin. can be placed anywhere that is accessible
 from test_room_plugin import TestRoomPlugin
 from test_agent_plugin import TestAgentPlugin
+from self_movement_sensor_plugin import SelfMovementSensorPlugin
 
 # spock utilities and plugins
 from spockbot import Client
@@ -36,7 +37,7 @@ settings = {
 # You can define new plugins that listen for events from the game.
 plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
-
+plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
 plugins.append(('TestAgent', TestAgentPlugin))
 
 

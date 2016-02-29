@@ -1,4 +1,4 @@
-1"""
+"""
 An example plugin for spockbot
 
 Demonstrates the following functionality:
@@ -32,8 +32,22 @@ WEST = 90
 SOUTH = 180
 EAST = 270
 
+# acceptable error to see if the agent has stopped moving
 EPSILON_DIST = 0.1
 EPSILON_DIR  = 1.0
+
+
+# probably make this a subclass of some generic agent state
+class AgentMovementState:
+    def __init__(self, pos=None, facing=None, moving=None, turning=None):
+        # x, y, z integer only
+        self.pos = Vector3(*pos) if pos else None
+        # cardinal directions only
+        self.dir = facing
+        # if the agent is moving or turning
+        self.moving = moving
+        self.turning = turning
+
 
 @pl_announce('SelfMovementSensor')
 class SelfMovementSensorPlugin(PluginBase):
@@ -42,9 +56,9 @@ class SelfMovementSensorPlugin(PluginBase):
                 'Interact',
     )
     events = {
-        'movement_position_reset':  'handle_position_reset'
-        'movement_path_done':       'handle_path_done'
-        #'client_join_game':         'handle_client_join',
+        'movement_position_reset':  'handle_position_reset',
+        'movement_path_done':       'handle_path_done',
+        'client_join_game':         'handle_client_join',
         #'inventory_synced':         'handle_inventory',
         #'chat':                     'handle_chat',
     }
@@ -56,52 +70,83 @@ class SelfMovementSensorPlugin(PluginBase):
 
         # the agent's records of its own motion. updates every x seconds
         # will be an integer block position, with the agent at the center
-        self.pos = None
-        # NORTH, SOUTH, WEST, EAST
-        self.dir = None
-        # whether the agent is currently moving (forward) or turning
-        # self.moving = False
-        # self.turning = False
+        self.state = AgentMovementState()
+        # absolute position/direction used to compute moving/turning
+        self.absolute_pos = None
+        self.absolute_dir = None
 
-        frequency = 1  # in seconds
+        # timer to update the agent's knowledge of its own movement
+        frequency = 1
         self.timers.reg_event_timer(frequency, self.sensor_timer_tick)
 
 
+    #########################################################################
+    # Timers and event handlers
+    #########################################################################
 
     # not a normal event handler. simply triggered every x seconds
     def sensor_timer_tick(self):
-        self.handle_update_sensors(self)
+        self.handle_update_sensors()
+
+
+    def handle_client_join(self, name, data):
+        logger.info("Initializing agent's internal movement state")
+        self.handle_update_sensors()
+
 
     def handle_update_sensors(self):
-        client_pos = self.clientinfo.position
-        self.facing = get_nearest_direction(client_pos.yaw)
-        self.pos = Vector3(*get_nearest_position(client_pos.x,client_pos.y,client_pos.z))
+        pos = self.clientinfo.position
+        self.state.facing = self.get_nearest_direction(pos.yaw)
+        x,y,z = self.get_nearest_position(pos.x, pos.y, pos.z)
+        self.state.pos = Vector3(x,y,z)
+
+        self.state.turning = self.is_turning()
+        self.state.moving = self.is_moving()
+
+        self.log_agent_state(self.state)
 
 
+    def handle_position_reset(self, name, data):
+        pass
+
+
+    def handle_path_done(self, name, data):
+        pass
+
+
+    #########################################################################
+    # Utility functions for updating personal state
+    #########################################################################
     def get_nearest_direction(self, yaw):
         deg_from = [(abs(NORTH - yaw),'NORTH'),
                     (abs(SOUTH - yaw),'SOUTH'),
                     (abs(WEST - yaw), 'WEST'),
                     (abs(EAST - yaw), 'EAST'),]
         diff,facing = min(deg_from)
-        logger.info("facing {} with a deviation of {}").format(facing, diff)
+        #logger.info("facing {} with a deviation of {}".format(facing, diff))
         return facing
 
 
-    def get_nearest_position(x, y, z):
+    def get_nearest_position(self, x, y, z):
         pos = (math.floor(x),math.floor(y),math.floor(z))
-        logger.info("at position {} with original {}").format(pos, (x,y,z))
+        #logger.info("at position {} with original {}".format(pos, (x,y,z)))
         return pos
 
 
-    def is_turning():
+    def is_turning(self):
+        if self.absolute_dir is None:
+            return False
+
         diff = abs(self.absolute_dir - self.clientinfo.position.yaw)
         if diff > EPSILON_DIR:
             return True
         return False
 
 
-    def is_moving():
+    def is_moving(self):
+        if self.absolute_pos is None:
+            return False
+
         dist = math.sqrt(
             (self.absolute_pos.x - self.clientinfo.position.x)**2 +
             (self.absolute_pos.y - self.clientinfo.position.y)**2 +
@@ -110,21 +155,14 @@ class SelfMovementSensorPlugin(PluginBase):
             return True
         return False
 
-    """
-    def periodic_event_handler(self):
-        logger.info('My position: {0} pitch: {1} yaw: {2}'.format(
-            self.clientinfo.position,
-            self.clientinfo.position.pitch,
-            self.clientinfo.position.yaw))
 
-        # Place a block in front of the player
-        self.interact.place_block(
-            self.clientinfo.position + Vector3(-1, 0, -1))
-
-        # Read a block under the player
-        block_pos = self.clientinfo.position.floor()
-        block_id, meta = self.world.get_block(*block_pos)
-        block_at = blocks.get_block(block_id, meta)
-        self.chat.chat('Found block %s at %s' % (
-            block_at.display_name, block_pos))
-    """
+    def log_agent_state(self, agent_state):
+        logger.info(
+            "current state: <x:{},y:{},z:{},dir:{},moving:{},turning:{}>".format(
+                agent_state.pos.x,
+                agent_state.pos.y,
+                agent_state.pos.z,
+                agent_state.facing,
+                agent_state.moving,
+                agent_state.turning,)
+        )
