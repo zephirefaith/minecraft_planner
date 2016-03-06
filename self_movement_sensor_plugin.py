@@ -91,6 +91,7 @@ class SelfMovementSensorPlugin(PluginBase):
         self.state.dir = facing
 
         mvu.log_agent_motion(self.motion)
+        mvu.log_agent_state(self.state)
 
 
     def handle_position_reset(self, name, data):

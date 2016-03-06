@@ -23,18 +23,18 @@ EPSILON_DIST = 1./10
 EPSILON_DIR  = 90./10
 
 compass_labels = {
-    DIR_SOUTH: 'SOUTH',
-    DIR_EAST: 'EAST',
-    DIR_NORTH: 'NORTH',
-    DIR_WEST: 'WEST',
+    DIR_SOUTH:  'SOUTH',
+    DIR_EAST:   'EAST',
+    DIR_NORTH:  'NORTH',
+    DIR_WEST:   'WEST',
 }
 
 motion_labels = {
-    MOVE_NONE: 'NONE',
-    MOVE_FORWARD: 'FORWARD',
-    TURN_NONE: 'NONE',
-    TURN_LEFT: 'LEFT',
-    TURN_RIGHT: 'RIGHT',
+    MOVE_NONE:      'NONE',
+    MOVE_FORWARD:   'FORWARD',
+    TURN_NONE:      'NONE',
+    TURN_LEFT:      'LEFT',
+    TURN_RIGHT:     'RIGHT',
 }
 
 # primitive actions/percepts. Note, all are egocentric

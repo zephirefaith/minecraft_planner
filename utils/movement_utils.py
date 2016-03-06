@@ -20,17 +20,20 @@ def get_nearest_delta_pos(prev_pos, cur_pos):
         (prev_pos.x - cur_pos.x)**2 +
         (prev_pos.y - cur_pos.y)**2 +
         (prev_pos.z - cur_pos.z)**2)
-    if abs(dist-1) > EPSILON_DIST:
+    if abs(dist-1) < EPSILON_DIST:
         return MOVE_FORWARD
     return MOVE_NONE
 
 def get_nearest_delta_dir(prev_dir, cur_dir):
     prev_angle = get_abs_angle(prev_dir)
     cur_angle = get_abs_angle(cur_dir)
-    delta = cur_dir - prev_dir
-    if delta - TURN_LEFT < EPSILON_DIR:
+    delta = cur_angle - prev_angle
+    # print("current delta: {}".format(delta))
+    if abs(delta - TURN_LEFT) < EPSILON_DIR:
+        # print("returning TURN_LEFT value")
         return TURN_LEFT
-    elif delta - TURN_RIGHT < EPSILON_DIR:
+    elif abs(delta - TURN_RIGHT) < EPSILON_DIR:
+        # print("returning TURN_RIGHT value")
         return TURN_RIGHT
     return TURN_NONE
 
@@ -59,18 +62,16 @@ def get_nearest_position(x, y, z):
 
 def log_agent_motion(primitive_action):
     logger.info(
-        "current action:\nmoving: {}, turning: {}>\n".format(
+        "current action: <moving: {}, turning: {}>".format(
             primitive_action.delta_pos,
             primitive_action.delta_dir,)
     )
 
 def log_agent_state(agent_state):
     logger.info(
-        "current state:\n<x:{}, y:{}, z:{}, facing:{}, moving:{}, turning:{}>\n".format(
+        "current state: <x:{}, y:{}, z:{}, facing:{}>".format(
             agent_state.pos.x,
             agent_state.pos.y,
             agent_state.pos.z,
-            agent_state.facing,
-            agent_state.moving,
-            agent_state.turning,)
+            compass_labels[agent_state.dir],)
     )
