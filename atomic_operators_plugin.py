@@ -37,13 +37,13 @@ class AtomicOperatorsPlugin(PluginBase):
         facing = mvu.get_nearest_direction(pos.yaw)
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
         #print("original coords: {}".format((x,y,z)))
-        if facing == 'EAST':
+        if facing == DIR_EAST:
             x = x+1
-        elif facing == 'WEST':
+        elif facing == DIR_WEST:
             x = x-1
-        elif facing == 'SOUTH':
+        elif facing == DIR_SOUTH:
             z = z+1
-        elif facing == 'NORTH':
+        elif facing == DIR_NORTH:
             z = z-1
         #print("new coords: {}".format((x,y,z)))
         self.movement.move_to(x,y,z)
@@ -51,26 +51,26 @@ class AtomicOperatorsPlugin(PluginBase):
 
     def operator_look_left(self):
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
-        if facing == 'NORTH':
+        if facing == DIR_NORTH:
             new_facing = DIR_WEST
-        elif facing == 'SOUTH':
+        elif facing == DIR_SOUTH:
             new_facing = DIR_EAST
-        elif facing == 'WEST':
+        elif facing == DIR_WEST:
             new_facing = DIR_SOUTH
-        elif facing == 'EAST':
+        elif facing == DIR_EAST:
             new_facing = DIR_NORTH
         self.interact.look(yaw=new_facing,pitch=0.0)
 
 
     def operator_look_right(self):
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
-        if facing == 'NORTH':
+        if facing == DIR_NORTH:
             new_facing = DIR_EAST
-        elif facing == 'SOUTH':
+        elif facing == DIR_SOUTH:
             new_facing = DIR_WEST
-        elif facing == 'WEST':
+        elif facing == DIR_WEST:
             new_facing = DIR_NORTH
-        elif facing == 'EAST':
+        elif facing == DIR_EAST:
             new_facing = DIR_SOUTH
         self.interact.look(yaw=new_facing,pitch=0.0)
 

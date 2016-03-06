@@ -11,9 +11,9 @@ DIR_EAST = -90.0
 DIR_NORTH = 180.0
 DIR_WEST = 90.0
 
-LOOK_NONE = 0
-LOOK_LEFT = -90
-LOOK_RIGHT = 90
+TURN_NONE = 0
+TURN_LEFT = -90
+TURN_RIGHT = 90
 
 MOVE_NONE = 0
 MOVE_FORWARD = 1
@@ -32,9 +32,9 @@ compass_labels = {
 motion_labels = {
     MOVE_NONE: 'NONE',
     MOVE_FORWARD: 'FORWARD',
-    LOOK_NONE: 'NONE',
-    LOOK_LEFT: 'LEFT',
-    LOOK_RIGHT: 'RIGHT',
+    TURN_NONE: 'NONE',
+    TURN_LEFT: 'LEFT',
+    TURN_RIGHT: 'RIGHT',
 }
 
 # primitive actions/percepts. Note, all are egocentric

@@ -44,7 +44,7 @@ def get_nearest_direction(yaw):
                 (abs(DIR_WEST - yaw), DIR_WEST),
                 (abs(DIR_EAST - yaw), DIR_EAST),]
     diff,facing = min(deg_from)
-    label = facing_labels[facing]
+    label = compass_labels[facing]
     logger.debug("facing {} with a deviation of {}".format(label, diff))
     return facing
 
@@ -57,7 +57,14 @@ def get_nearest_position(x, y, z):
 # Logging functions
 #########################################################################
 
-def log_agent_motion(agent_state):
+def log_agent_motion(primitive_action):
+    logger.info(
+        "current action:\nmoving: {}, turning: {}>\n".format(
+            primitive_action.delta_pos,
+            primitive_action.delta_dir,)
+    )
+
+def log_agent_state(agent_state):
     logger.info(
         "current state:\n<x:{}, y:{}, z:{}, facing:{}, moving:{}, turning:{}>\n".format(
             agent_state.pos.x,
