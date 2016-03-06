@@ -9,7 +9,7 @@ import logging
 # custom plugin. can be placed anywhere that is accessible
 from test_room_plugin import TestRoomPlugin
 from test_agent_plugin import TestAgentPlugin
-from self_movement_sensor_plugin import SelfMovementSensorPlugin
+from self_movement_sensor_plugin import SelfMovementPerceptPlugin
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
 # spock utilities and plugins
@@ -38,7 +38,7 @@ settings = {
 # You can define new plugins that listen for events from the game.
 plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
-plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
+plugins.append(('SelfMovementPercept', SelfMovementPerceptPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 

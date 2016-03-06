@@ -6,11 +6,37 @@ the Minecraft world
 """
 
 # compass directions in yaw values
-DIR_SOUTH = 0
-DIR_EAST = 90
-DIR_NORTH = 180
-DIR_WEST = 270
+DIR_SOUTH = 0.0
+DIR_EAST = -90.0
+DIR_NORTH = 180.0
+DIR_WEST = 90.0
+
+LOOK_NONE = 0
+LOOK_LEFT = -90
+LOOK_RIGHT = 90
+
+MOVE_NONE = 0
+MOVE_FORWARD = 1
 
 # acceptable error to test whether agent has stopped moving
 EPSILON_DIST = 1./10
 EPSILON_DIR  = 90./10
+
+compass_labels = {
+    DIR_SOUTH: 'SOUTH',
+    DIR_EAST: 'EAST',
+    DIR_NORTH: 'NORTH',
+    DIR_WEST: 'WEST',
+}
+
+motion_labels = {
+    MOVE_NONE: 'NONE',
+    MOVE_FORWARD: 'FORWARD',
+    LOOK_NONE: 'NONE',
+    LOOK_LEFT: 'LEFT',
+    LOOK_RIGHT: 'RIGHT',
+}
+
+# primitive actions/percepts. Note, all are egocentric
+# motion_dir = {'LEFT', 'RIGHT', 'NONE'}
+# motion_pos = {'FORWARD', 'NONE'}

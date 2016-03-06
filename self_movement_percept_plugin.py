@@ -12,22 +12,22 @@ __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 # tick frequency for movement sensor
-FREQUENCY = 0.5
+FREQUENCY = 1
 
 # probably make this a subclass of some generic agent state
-class AgentMovementPrimitive:
+class AgentMovementState:
     def __init__(self, pos=None, facing=None, moving=None, turning=None):
-        # forward or none. faster movement occurs at higher freq
-        self.delta_pos = pos if pos else 'NONE'
-        # left ro right
-        self.delta_dir = facing if facing else 'NONE'
+        # x, y, z integer only
+        self.pos = Vector3(*pos) if pos else None
+        # cardinal directions only
+        self.dir = facing
         # if the agent is moving or turning
-        # self.moving = moving
-        # self.turning = turning
+        self.moving = moving
+        self.turning = turning
 
 
-@pl_announce('SelfMovementSensor')
-class SelfMovementSensorPlugin(PluginBase):
+@pl_announce('SelfMovementPercept')
+class SelfMovementPerceptPlugin(PluginBase):
 
     requires = ('Event', 'Timers', 'ClientInfo',)
 
@@ -43,11 +43,11 @@ class SelfMovementSensorPlugin(PluginBase):
 
         # the agent's records of its own motion. updates every x seconds
         # will be an integer block position, with the agent at the center
-        self.motion = AgentMovementPrimitive()
-        # previous position/direction in world-relative values
-        # used for computing motion internally. **not recorded by agent**
-        # changes according to motion primitives
-        self.state = None
+        self.state = AgentMovementState()
+        # actual position/direction used to compute moving/turning
+        self.absolute_pos = None
+        self.absolute_dir = None
+
         # timer to update the agent's knowledge of its own movement
         frequency = FREQUENCY
         self.timers.reg_event_timer(frequency, self.sensor_timer_tick)
@@ -62,7 +62,7 @@ class SelfMovementSensorPlugin(PluginBase):
         self.handle_update_sensors()
 
         # TODO: This has to be called with some data. e.g. formatted state
-        self.event.emit('agent_movement_primitive_percept')
+        self.event.emit('agent_position_state')
 
 
     def handle_client_join(self, name, data):
@@ -72,21 +72,14 @@ class SelfMovementSensorPlugin(PluginBase):
 
     def handle_update_sensors(self):
         pos = self.clientinfo.position
+        self.state.facing = mvu.get_nearest_direction(pos.yaw)
+        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
+        self.state.pos = Vector3(x,y,z)
 
-        # update absolute state as well as current movement primitive
-        delta_pos = mvu.get_nearest_delta_pos(self.state.pos, Vector3(pos.x, pos.y, pos.z))
-        self.motion.delta_pos = motion_labels[delta_pos]
-        delta_dir = mvu.get_nearest_delta_dir(self.state.dir, pos.yaw)
-        self.motion.delta_dir = motion_labels[delta_dir]
-        # update absolute state only if necessary
-        if delta_pos != MOVE_NONE:
-            x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-            self.state.pos = Vector3(x, y, z)
-        if delta_dir != TURN_NONE:
-            facing = mvu.get_nearest_direction(pos.yaw)
-            self.state.dir = facing
+        self.state.turning = self.is_turning()
+        self.state.moving = self.is_moving()
 
-        mvu.log_agent_motion(self.motion)
+        mvu.log_agent_state(self.state)
 
 
     def handle_position_reset(self, name, data):
@@ -95,3 +88,30 @@ class SelfMovementSensorPlugin(PluginBase):
 
     def handle_path_done(self, name, data):
         pass
+
+
+    #########################################################################
+    # Helper unctions for updating internal agent state
+    #########################################################################
+
+    def is_turning(self):
+        if self.absolute_dir is None:
+            return False
+
+        diff = abs(self.absolute_dir - self.clientinfo.position.yaw)
+        if diff > EPSILON_DIR:
+            return True
+        return False
+
+
+    def is_moving(self):
+        if self.absolute_pos is None:
+            return False
+
+        dist = math.sqrt(
+            (self.absolute_pos.x - self.clientinfo.position.x)**2 +
+            (self.absolute_pos.y - self.clientinfo.position.y)**2 +
+            (self.absolute_pos.z - self.clientinfo.position.z)**2)
+        if dist > EPSILON_DIST:
+            return True
+        return False
