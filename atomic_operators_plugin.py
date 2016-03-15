@@ -36,9 +36,7 @@ class AtomicOperatorsPlugin(PluginBase):
         pos = self.clientinfo.position
         facing = mvu.get_nearest_direction(pos.yaw)
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        #print("original coords: {}".format((x,y,z)))
         x,y,z = move_deltas[facing](x,y,z)
-        #print("new coords: {}".format((x,y,z)))
         self.movement.move_to(x,y,z)
 
 

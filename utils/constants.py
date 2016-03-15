@@ -22,6 +22,27 @@ MOVE_FORWARD = 1
 EPSILON_DIST = 1./10
 EPSILON_DIR  = 90./10
 
+##############################################################################
+# string labels used for printing, maybe later for ids as well
+##############################################################################
+compass_labels = {
+    DIR_SOUTH: 'SOUTH',
+    DIR_EAST:  'EAST',
+    DIR_NORTH: 'NORTH',
+    DIR_WEST:  'WEST',
+}
+
+motion_labels = {
+    MOVE_NONE:    'NONE',
+    MOVE_FORWARD: 'FORWARD',
+    TURN_NONE:    'NONE',
+    TURN_LEFT:    'LEFT',
+    TURN_RIGHT:   'RIGHT',
+}
+
+##############################################################################
+# absolute changes caused by taking the corresponding action
+##############################################################################
 look_left_deltas = {
     DIR_NORTH: DIR_WEST,
     DIR_SOUTH: DIR_EAST,
@@ -36,28 +57,11 @@ look_right_deltas = {
     DIR_EAST:  DIR_SOUTH,
 }
 
+# not exactly 'constant' but functions themselves are constant for Minecraft
+# should this be moved to a utility file? (e.g. movement_utils.py)
 move_deltas = {
     DIR_EAST:  (lambda x,y,z: (x+1,y,z)),
     DIR_WEST:  (lambda x,y,z: (x-1,y,z)),
     DIR_SOUTH: (lambda x,y,z: (x,y,z+1)),
     DIR_NORTH: (lambda x,y,z: (x,y,z-1)),
 }
-
-compass_labels = {
-    DIR_SOUTH:  'SOUTH',
-    DIR_EAST:   'EAST',
-    DIR_NORTH:  'NORTH',
-    DIR_WEST:   'WEST',
-}
-
-motion_labels = {
-    MOVE_NONE:      'NONE',
-    MOVE_FORWARD:   'FORWARD',
-    TURN_NONE:      'NONE',
-    TURN_LEFT:      'LEFT',
-    TURN_RIGHT:     'RIGHT',
-}
-
-# primitive actions/percepts. Note, all are egocentric
-# motion_dir = {'LEFT', 'RIGHT', 'NONE'}
-# motion_pos = {'FORWARD', 'NONE'}

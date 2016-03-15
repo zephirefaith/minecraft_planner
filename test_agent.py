@@ -16,6 +16,8 @@ from test_atomic_operators import TestAtomicOperatorsPlugin
 from spockbot import Client
 from spockbot.plugins import default_plugins
 
+from pyhop import hop
+
 __author__ = 'Bradley Sheneman'
 
 logger = logging.getLogger('spockbot')
