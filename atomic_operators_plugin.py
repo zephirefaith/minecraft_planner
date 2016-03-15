@@ -37,41 +37,20 @@ class AtomicOperatorsPlugin(PluginBase):
         facing = mvu.get_nearest_direction(pos.yaw)
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
         #print("original coords: {}".format((x,y,z)))
-        if facing == DIR_EAST:
-            x = x+1
-        elif facing == DIR_WEST:
-            x = x-1
-        elif facing == DIR_SOUTH:
-            z = z+1
-        elif facing == DIR_NORTH:
-            z = z-1
+        x,y,z = move_deltas[facing](x,y,z)
         #print("new coords: {}".format((x,y,z)))
         self.movement.move_to(x,y,z)
 
 
     def operator_look_left(self):
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
-        if facing == DIR_NORTH:
-            new_facing = DIR_WEST
-        elif facing == DIR_SOUTH:
-            new_facing = DIR_EAST
-        elif facing == DIR_WEST:
-            new_facing = DIR_SOUTH
-        elif facing == DIR_EAST:
-            new_facing = DIR_NORTH
+        new_facing = look_left_deltas[facing]
         self.interact.look(yaw=new_facing,pitch=0.0)
 
 
     def operator_look_right(self):
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
-        if facing == DIR_NORTH:
-            new_facing = DIR_EAST
-        elif facing == DIR_SOUTH:
-            new_facing = DIR_WEST
-        elif facing == DIR_WEST:
-            new_facing = DIR_NORTH
-        elif facing == DIR_EAST:
-            new_facing = DIR_SOUTH
+        new_facing = look_right_deltas[facing]
         self.interact.look(yaw=new_facing,pitch=0.0)
 
 
