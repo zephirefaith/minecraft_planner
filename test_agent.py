@@ -12,11 +12,10 @@ from test_agent_plugin import TestAgentPlugin
 from self_movement_sensor_plugin import SelfMovementSensorPlugin
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
+
 # spock utilities and plugins
 from spockbot import Client
 from spockbot.plugins import default_plugins
-
-from pyhop import hop
 
 __author__ = 'Bradley Sheneman'
 
