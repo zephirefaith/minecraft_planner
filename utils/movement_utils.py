@@ -75,3 +75,8 @@ def log_agent_state(agent_state):
             agent_state.pos.z,
             compass_labels[agent_state.dir],)
     )
+
+def log_agent_vision(visible_blocks):
+    logger.info(
+        "current vis blocks: <{}>".format(visible_blocks)
+    )

@@ -6,10 +6,14 @@ Modified from example_plugin found in the original SpockBot repository
 
 import logging
 
-# custom plugin. can be placed anywhere that is accessible
+# custom plugins. can be placed anywhere that is accessible
 from test_room_plugin import TestRoomPlugin
 from test_agent_plugin import TestAgentPlugin
+
 from self_movement_sensor_plugin import SelfMovementSensorPlugin
+from sensor_timers_plugin import SensorTimersPlugin
+from camera_plugin import RaycastCameraPlugin
+
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
 
@@ -39,12 +43,13 @@ settings = {
 # You can define new plugins that listen for events from the game.
 plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
+plugins.append(('SensorTimers', SensorTimersPlugin))
 plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
+plugins.append(('RaycastCamera', RaycastCameraPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 
 plugins.append(('TestAgent', TestAgentPlugin))
-
 
 # Instantiate and start the client
 client = Client(plugins=plugins, settings=settings)
