@@ -5,6 +5,8 @@ Modified from example_plugin found in the original SpockBot repository
 """
 
 import logging
+import os
+import sys
 
 # custom plugins. can be placed anywhere that is accessible
 from test_room_plugin import TestRoomPlugin
@@ -20,6 +22,8 @@ from test_atomic_operators import TestAtomicOperatorsPlugin
 # spock utilities and plugins
 from spockbot import Client
 from spockbot.plugins import default_plugins
+sys.path.insert(0, os.path.abspath('../SpockBot-Extra'))
+from plugins.echo_packet import EchoPacketPlugin
 
 __author__ = 'Bradley Sheneman'
 
@@ -50,6 +54,7 @@ plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 
 plugins.append(('TestAgent', TestAgentPlugin))
+plugins.append(('echo', EchoPacketPlugin))
 
 # Instantiate and start the client
 client = Client(plugins=plugins, settings=settings)
