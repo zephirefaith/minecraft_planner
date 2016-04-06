@@ -86,8 +86,8 @@ class TestPlannerPlugin(PluginBase):
         return self.state
 
     def break_block(self):
-        if(self.state.block == 1):
-            self.state.block = 0
+        if(self.state.gold == 1):
+            self.state.gold = 0
             return self.state
         return False
 
@@ -96,7 +96,14 @@ class TestPlannerPlugin(PluginBase):
     ###########
 
     def solution(self):
-        # will be used to call the hop.plan command
+        self.room_plan = hop.plan(self.state,
+                            [('get_resource')],
+                            hop.get_operators(),
+                            hop.get_methods())
+        if not self.room_plan:
+            return False
+        else:
+            return True
 
     def find_route_to_resource(self):
         if not self.state.path:
