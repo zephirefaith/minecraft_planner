@@ -141,6 +141,7 @@ class TestRoomPlugin(PluginBase):
             return False
         return True
 
+    #returns a list of positions
     def compute_path(self, pos0, pos1, max_depth):
         grnd = self.dims['min_y']
         minx = self.dims['min_x']
