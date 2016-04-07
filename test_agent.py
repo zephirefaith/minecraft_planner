@@ -47,7 +47,7 @@ settings = {
 # Any functionality that you want must be implemented in a plugin.
 # You can define new plugins that listen for events from the game.
 plugins = default_plugins
-#plugins.append(('TestRoom', TestRoomPlugin))
+plugins.append(('TestRoom', TestRoomPlugin))
 plugins.append(('SensorTimers', SensorTimersPlugin))
 plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
 #plugins.append(('RaycastCamera', RaycastCameraPlugin))

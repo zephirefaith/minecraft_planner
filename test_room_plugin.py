@@ -36,10 +36,14 @@ START_COORDS = (-66,14,-39)
 # have to create a dummy class like this
 # in order to use your custom plugin in other plugins as a 'requires'
 class TestRoomCore(object):
-    def __init__(self, world, dims):
+    def __init__(self, world, dims, testroom_instance):
+        self.testroom_instance = testroom_instance
         #self.world = world
         #self.dims = dims
         pass
+    def compute_path(self, pos0, pos1, max_depth=10):
+        return self.testroom_instance.compute_path(pos0, pos1, max_depth)
+
 
 
 @pl_announce('TestRoom')
@@ -68,7 +72,7 @@ class TestRoomPlugin(PluginBase):
         self.start_location = Vector3(*START_COORDS)
 
         # initialize the 'provides' to make this available to other plugins
-        self.testroom_core = TestRoomCore(self.world, self.dims)
+        self.testroom_core = TestRoomCore(self.world, self.dims, self)
         ploader.provides('TestRoom',self.testroom_core)
 
         logger.info("test room plugin loaded")
@@ -143,6 +147,7 @@ class TestRoomPlugin(PluginBase):
 
     #returns a list of positions
     def compute_path(self, pos0, pos1, max_depth):
+        print("start pos: {}, goal pos: {}".format(pos0, pos1))
         grnd = self.dims['min_y']
         minx = self.dims['min_x']
         maxx = self.dims['max_x']
