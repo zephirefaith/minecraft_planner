@@ -163,7 +163,7 @@ class TestPlannerPlugin(PluginBase):
 
     def find_route_to_resource(self, state):
         state = copy.deepcopy(state)
-        print("calling find_route")
+        print("calling find_route with state: {}".format(state.__name__))
         if not state.path:
             state.path = self.testroom.compute_path(state.current_position, state.goal_loc)
             if not state.path:
@@ -172,11 +172,11 @@ class TestPlannerPlugin(PluginBase):
                 state.path_found = 1
                 state.path_length = len(state.path)
                 state.path_idx = 0
-        return None
+        return []
 
     def navigate_to_resource(self, state):
         state = copy.deepcopy(state)
-        print("calling navigate")
+        print("calling navigate with state: {}".format(state.__name__))
         if state.path_found == 1 and state.gold_reached == 0:
             next_position = state.path[state.path_idx]
             if state.path_idx == (len(state.path) - 1):
