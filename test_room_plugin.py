@@ -91,11 +91,11 @@ class TestRoomPlugin(PluginBase):
             x = data['location']['x']
             y = data['location']['y']
             z = data['location']['z']
-            logger.info("Found a gold block. attempting to reach it")
-            if self.is_reachable((-66,14,-39),(x,y,z)):
-                print("gold is reachable from current pos")
-            else:
-                print("gold is not reachable")
+            # logger.info("Found a gold block. attempting to reach it")
+            # if self.is_reachable((-66,14,-39),(x,y,z)):
+            #     print("gold is reachable from current pos")
+            # else:
+            #     print("gold is not reachable")
         #x = data['location']['x']
         #y = data['location']['y']
         #z = data['location']['z']

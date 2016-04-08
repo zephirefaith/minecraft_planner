@@ -82,7 +82,6 @@ class TestPlannerPlugin(PluginBase):
         self.state.current_position = self.state.start_loc
         self.state.current_orientation = mvu.get_nearest_direction(pos.yaw)
 
-
     # block update handler to trigger the planner to start
     def handle_block_update(self, name, data):
         # there is a gold block. call the planner

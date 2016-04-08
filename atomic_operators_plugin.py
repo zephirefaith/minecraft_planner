@@ -51,6 +51,18 @@ class AtomicOperatorsPlugin(PluginBase):
         new_facing = look_right_deltas[facing]
         self.interact.look(yaw=new_facing,pitch=0.0)
 
+    def operator_break_block(self):
+        pos = self.clientinfo.position
+        facing = mvu.get_nearest_direction(pos.yaw)
+        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
+        target_block_coords = move_deltas[facing](x,y,z)
+        target_block_center = tuple(cb+0.5 for cb in target_block_coords)
+        self.interact.dig_block(pos = target_block_center)
+
+    def operator_place_block(self):
+        # TODO: place a block where agent is currently facing
+        # returns nothing
+        pass
 
     # below functions are not yet implemented.
     # will have to create percepts for each of these as well
@@ -68,16 +80,6 @@ class AtomicOperatorsPlugin(PluginBase):
         # TODO: check what we are currently holding
         # return identifier for this object.
         # (do we need unique IDs? or will generic material IDs suffice?)
-        pass
-
-    def operator_dig_block(self):
-        # TODO: dig/gather the block where agent is currently facing
-        # returns nothing
-        pass
-
-    def operator_place_block(self):
-        # TODO: place a block where agent is currently facing
-        # returns nothing
         pass
 
     #########################################################################
