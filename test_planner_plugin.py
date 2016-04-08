@@ -176,52 +176,56 @@ class TestPlannerPlugin(PluginBase):
 
     def navigate_to_resource(self, state):
         state = copy.deepcopy(state)
+        commands = []
         print("calling navigate with state: {}".format(state.__name__))
         if state.path_found == 1 and state.gold_reached == 0:
-            next_position = state.path[state.path_idx]
-            if state.path_idx == (len(state.path) - 1):
-                state.gold_reached == 1
-                return False
-            if next_position[0]>state.current_position[0]:
-                if state.current_orientation == DIR_EAST:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',)]
-                elif state.current_orientation == DIR_WEST:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_NORTH:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_left',)]
-            elif next_position[0]<state.current_position[0]:
-                if state.current_orientation == DIR_WEST:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',)]
-                elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_EAST:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_NORTH:
-                    return [('turn_left',)]
-            elif next_position[2]>state.current_position[2]:
-                if state.current_orientation == DIR_SOUTH:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',)]
-                elif state.current_orientation == DIR_EAST:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_NORTH:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_WEST:
-                    return [('turn_left',)]
-            elif next_position[2]<state.current_position[2]:
-                if state.current_orientation == DIR_NORTH:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',)]
-                elif state.current_orientation == DIR_WEST:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_right',)]
-                elif state.current_orientation == DIR_EAST:
-                    return [('turn_left',)]
+            state.path_idx = 0
+            for next_position in state.path:
+                if state.path_idx == (len(state.path) - 1):
+                    state.gold_reached == 1
+                    return commands
+                if next_position[0]>state.current_position[0]:
+                    if state.current_orientation == DIR_EAST:
+                        state.path_idx = state.path_idx + 1
+                        commands.append('move_forward')
+                    elif state.current_orientation == DIR_WEST:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_NORTH:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_SOUTH:
+                        commands.append('turn_left')
+                elif next_position[0]<state.current_position[0]:
+                    if state.current_orientation == DIR_WEST:
+                        state.path_idx = state.path_idx + 1
+                        commands.append('move_forward')
+                    elif state.current_orientation == DIR_SOUTH:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_EAST:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_NORTH:
+                        commands.append('turn_left')
+                elif next_position[2]>state.current_position[2]:
+                    if state.current_orientation == DIR_SOUTH:
+                        state.path_idx = state.path_idx + 1
+                        commands.append('move_forward')
+                    elif state.current_orientation == DIR_EAST:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_NORTH:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_WEST:
+                        commands.append('turn_left')
+                elif next_position[2]<state.current_position[2]:
+                    if state.current_orientation == DIR_NORTH:
+                        state.path_idx = state.path_idx + 1
+                        commands.append('move_forward')
+                    elif state.current_orientation == DIR_WEST:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_SOUTH:
+                        commands.append('turn_right')
+                    elif state.current_orientation == DIR_EAST:
+                        commands.append('turn_left')
+
+            return commands
         else:
             return False
 
@@ -229,45 +233,49 @@ class TestPlannerPlugin(PluginBase):
         state = copy.deepcopy(state)
         print("calling find_route")
         if state.gold_reached == 1 and state.gold_acquired == 0:
-            if state.gold == 1:
+            commands = []
+            while state.gold_acquired == 0:
                 #gold block is unbroken
                 #face the block, if already facing then break the block
                 if state.goal_loc[2]<state.current_position[2]:
                     if state.current_orientation == DIR_NORTH:
-                        return [('break_block',)]
+                        state.gold_acquired = 1
+                        commands.append('break_block')
                     elif state.current_orientation == DIR_WEST:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_SOUTH:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_EAST:
-                        return [('turn_left',)]
+                        commands.append('turn_left')
                 if state.goal_loc[2]>state.current_position[2]:
                     if state.current_orientation == DIR_SOUTH:
-                        return [('break_block',)]
+                        state.gold_acquired = 1
+                        commands.append('break_block')
                     elif state.current_orientation == DIR_EAST:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_NORTH:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_WEST:
-                        return [('turn_left',)]
+                        commands.append('turn_left')
                 if state.goal_loc[0]<state.current_position[0]:
-                    if state.current_orientation == DIR_WEST:
-                        return [('break_block',)]
+                        state.gold_acquired = 1
+                        commands.append('break_block')
                     elif state.current_orientation == DIR_EAST:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_SOUTH:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_NORTH:
-                        return [('turn_left',)]
+                        commands.append('turn_left')
                 if state.goal_loc[0]>state.current_position[0]:
                     if state.current_orientation == DIR_EAST:
-                        return [('break_block',)]
+                        state.gold_acquired = 1
+                        commands.append('break_block')
                     elif state.current_orientation == DIR_WEST:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_NORTH:
-                        return [('turn_right',)]
+                        commands.append('turn_right')
                     elif state.current_orientation == DIR_SOUTH:
-                        return [('turn_left',)]
+                        commands.append('turn_left')
 
             else:
                 state.gold_acquired = 1
