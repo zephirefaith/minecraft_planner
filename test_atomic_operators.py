@@ -12,19 +12,25 @@ FREQUENCY = 3
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
+
+# mseq = [
+#     "move",
+#     "turn_left",
+#     "move",
+#     "move",
+#     "turn_right",
+#     "turn_right",
+#     "move",
+#     "move",
+#     "turn_right",
+#     "move",
+#     "turn_left",
+#     "turn_left",
+# ]
+
 mseq = [
-    "move",
-    "turn_left",
-    "move",
-    "move",
-    "turn_right",
-    "turn_right",
-    "move",
-    "move",
-    "turn_right",
-    "move",
-    "turn_left",
-    "turn_left",
+    "break_obstacle",
+    "break_obstacle",
 ]
 
 @pl_announce('TestAtomicOperators')
@@ -72,6 +78,8 @@ class TestAtomicOperatorsPlugin(PluginBase):
             self.atomicoperators.operator_look_left()
         elif mseq[self.seq_index] == "turn_right":
             self.atomicoperators.operator_look_right()
+        elif mseq[self.seq_index] == "break_obstacle":
+            self.atomicoperators.operator_break_obstacle()
 
         logger.info("\n******agent executing command: {}******\n".format(mseq[self.seq_index]))
         self.seq_index = (self.seq_index+1)%len(mseq)

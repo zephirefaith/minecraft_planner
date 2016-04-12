@@ -1,4 +1,5 @@
 import logging
+import copy
 
 from spockbot.mcdata import blocks
 from spockbot.plugins.base import PluginBase, pl_announce
@@ -51,13 +52,18 @@ class AtomicOperatorsPlugin(PluginBase):
         new_facing = look_right_deltas[facing]
         self.interact.look(yaw=new_facing,pitch=0.0)
 
-    def operator_break_block(self):
-        pos = self.clientinfo.position
+    def operator_break_obstacle(self):
+        pos = copy.deepcopy(self.clientinfo.position)
         facing = mvu.get_nearest_direction(pos.yaw)
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
         target_block_coords = move_deltas[facing](x,y,z)
-        target_block_center = tuple(cb+0.5 for cb in target_block_coords)
-        self.interact.dig_block(pos = target_block_center)
+        target_block_center = tuple([cb+0.5 for cb in target_block_coords])
+
+        pos.x,pos.y,pos.z = target_block_center
+        pos.yaw = facing
+        self.interact.start_digging(pos)
+
+
 
     def operator_place_block(self):
         # TODO: place a block where agent is currently facing
