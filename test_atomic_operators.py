@@ -7,36 +7,39 @@ from spockbot.vector import Vector3
 
 from pyhop import hop
 
+from utils.constants import *
+
 FREQUENCY = 3
 
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 
-# mseq = [
-#     "move",
-#     "turn_left",
-#     "move",
-#     "move",
-#     "turn_right",
-#     "turn_right",
-#     "move",
-#     "move",
-#     "turn_right",
-#     "move",
-#     "turn_left",
-#     "turn_left",
-# ]
-
 mseq = [
-    "break_obstacle",
-    "break_obstacle",
+    "move",
+    "turn_left",
+    "move",
+    "move",
+    "turn_right",
+    "turn_right",
+    "move",
+    "move",
+    "turn_right",
+    "move",
+    "turn_left",
+    "turn_left",
 ]
+
+# mseq = [
+#     "center_on_wall",
+#     #"break_obstacle",
+#     "break_obstacle",
+# ]
 
 @pl_announce('TestAtomicOperators')
 class TestAtomicOperatorsPlugin(PluginBase):
 
-    requires = ('Event', 'Timers', 'AtomicOperators')
+    requires = ('Event', 'Timers', 'AtomicOperators', 'Interact',)
 
     events = {
         #'movement_position_reset':  'handle_position_reset',
@@ -51,23 +54,23 @@ class TestAtomicOperatorsPlugin(PluginBase):
 
         logger.info("adding atomic operators to pyhop:")
         # note: can call declare_operators multiple times cor current situation
-        hop.declare_operators(
-            self.atomicoperators.operator_move,
-            self.atomicoperators.operator_look_left,
-            self.atomicoperators.operator_look_right)
-        hop.print_operators(hop.get_operators())
-
-        hop.declare_methods(
-            'do_test_sequence',
-            self.do_forward_sequence,
-            self.do_reverse_sequence)
-        hop.print_methods(hop.get_methods())
-
-        # have to add fields like start_pos.did_forward_seq = False
-        # and for the goal: goal_pos.did_forward_seq = True
-        self.start_state = hop.State('start_state')
-        self.goal_state1 = hop.Goal('goal_state1')
-        self.goal_state2 = hop.Goal('goal_state2')
+        # hop.declare_operators(
+        #     self.atomicoperators.operator_move,
+        #     self.atomicoperators.operator_look_left,
+        #     self.atomicoperators.operator_look_right)
+        # hop.print_operators(hop.get_operators())
+        #
+        # hop.declare_methods(
+        #     'do_test_sequence',
+        #     self.do_forward_sequence,
+        #     self.do_reverse_sequence)
+        # hop.print_methods(hop.get_methods())
+        #
+        # # have to add fields like start_pos.did_forward_seq = False
+        # # and for the goal: goal_pos.did_forward_seq = True
+        # self.start_state = hop.State('start_state')
+        # self.goal_state1 = hop.Goal('goal_state1')
+        # self.goal_state2 = hop.Goal('goal_state2')
 
         ploader.provides('TestAtomicOperators',self)
 
@@ -80,6 +83,9 @@ class TestAtomicOperatorsPlugin(PluginBase):
             self.atomicoperators.operator_look_right()
         elif mseq[self.seq_index] == "break_obstacle":
             self.atomicoperators.operator_break_obstacle()
+        elif mseq[self.seq_index] == "center_on_wall":
+            self.interact.look(yaw=DIR_SOUTH,pitch=0.0)
+
 
         logger.info("\n******agent executing command: {}******\n".format(mseq[self.seq_index]))
         self.seq_index = (self.seq_index+1)%len(mseq)

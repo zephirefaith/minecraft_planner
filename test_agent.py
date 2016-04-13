@@ -49,17 +49,19 @@ settings = {
 # You can define new plugins that listen for events from the game.
 plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
+
 plugins.append(('SensorTimers', SensorTimersPlugin))
-plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
+#plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
 #plugins.append(('VisualSensor', VisualSensorPlugin))
+#plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
+
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 #plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
-#plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
+
 plugins.append(('TestPlanner', TestPlannerPlugin))
+
 #plugins.append(('echo', EchoPacketPlugin))
-
 #plugins.append(('TestAgent', TestAgentPlugin))
-
 
 # Instantiate and start the client
 client = Client(plugins=plugins, settings=settings)

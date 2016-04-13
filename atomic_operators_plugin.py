@@ -33,6 +33,7 @@ class AtomicOperatorsPlugin(PluginBase):
     #########################################################################
 
     def operator_move(self):
+        print("calling operator move")
         # forward one unit/block, direction agent is facing
         pos = self.clientinfo.position
         facing = mvu.get_nearest_direction(pos.yaw)
@@ -42,26 +43,32 @@ class AtomicOperatorsPlugin(PluginBase):
 
 
     def operator_look_left(self):
+        print("calling operator look left")
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
         new_facing = look_left_deltas[facing]
         self.interact.look(yaw=new_facing,pitch=0.0)
 
 
     def operator_look_right(self):
+        print("calling operator look right")
         facing = mvu.get_nearest_direction(self.clientinfo.position.yaw)
         new_facing = look_right_deltas[facing]
         self.interact.look(yaw=new_facing,pitch=0.0)
 
     def operator_break_obstacle(self):
+        print("calling operator break obstacle")
         pos = copy.deepcopy(self.clientinfo.position)
         facing = mvu.get_nearest_direction(pos.yaw)
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
         target_block_coords = move_deltas[facing](x,y,z)
+        #print("target block integer coords: {}".format(target_block_coords))
         target_block_center = tuple([cb+0.5 for cb in target_block_coords])
-
-        pos.x,pos.y,pos.z = target_block_center
+        #print("target block center coords: {}".format(target_block_center))
         pos.yaw = facing
-        self.interact.start_digging(pos)
+        pos.pitch = 0.0
+        pos.x,pos.y,pos.z = target_block_coords
+        self.interact.dig_block(pos)
+        self.interact.look(yaw=facing,pitch=0.0)
 
 
 

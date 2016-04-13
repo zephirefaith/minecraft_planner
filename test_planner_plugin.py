@@ -1,6 +1,7 @@
 import logging
 import copy
 import math
+import time
 
 from spockbot.mcdata import blocks
 from spockbot.plugins.base import PluginBase, pl_announce
@@ -19,21 +20,22 @@ logger = logging.getLogger('spockbot')
 @pl_announce('TestPlanner')
 class TestPlannerPlugin(PluginBase):
 
-    requires = ('Event', 'Timers', 'ClientInfo', 'Interact', 'World', 'TestRoom')
+    requires = ('Event', 'Timers', 'ClientInfo', 'AtomicOperators', 'Interact', 'World', 'TestRoom',)
 
     events = {
         'world_block_update':   'handle_block_update',
         'client_join_game':     'handle_client_join',
-        #'movement_position_reset':  'handle_position_reset',
-        #'movement_path_done':       'handle_path_done',
+        'planning_complete':    'register_execution_timer'
     }
-
-    #orientation = {'N', 'E', 'S', 'W'}
 
     def __init__(self, ploader, settings):
         super(TestPlannerPlugin, self).__init__(ploader, settings)
+        self.init_planner()
+        self.init_operators()
+        ploader.provides('TestPlanner', self)
 
-        logger.info("adding atomic operators to pyhop:")
+    def init_planner(self):
+        logger.info("adding atomic operators to pyhop")
         # note: can call declare_operators multiple times for current situation
         hop.declare_operators(
             self.move_forward,
@@ -43,9 +45,7 @@ class TestPlannerPlugin(PluginBase):
         hop.print_operators(hop.get_operators())
 
         # for the main task (so far only one option)
-        hop.declare_methods(
-            'get_resource',
-            self.get_resource)
+        hop.declare_methods('get_resource',self.get_resource)
 
         # for each sub-task of the main task
         hop.declare_methods('find_route', self.find_route_to_resource)
@@ -73,25 +73,45 @@ class TestPlannerPlugin(PluginBase):
         self.state.gold_broken = 0
         self.state.gold_acquired = 0
 
+    def init_operators(self):
+        self.op_translations = {
+            'move_forward': self.atomicoperators.operator_move,
+            'turn_left': self.atomicoperators.operator_look_left,
+            'turn_right': self.atomicoperators.operator_look_right,
+            'break_block': self.atomicoperators.operator_break_obstacle,
+        }
 
-        ploader.provides('TestPlanner', self)
+    def register_execution_timer(self, name, data):
+        frequency = 3
+        self.plan_idx = 0
+        self.timers.reg_event_timer(frequency, self.execution_tick)
+
+    def execution_tick(self):
+        if not self.room_plan:
+            print("no plan to execute")
+            return
+        plan_op = self.room_plan[self.plan_idx][0]
+        op_fn = self.op_translations[plan_op]
+        print("current object in plan: {}".format(plan_op))
+        op_fn()
+        self.plan_idx += 1
+        if self.plan_idx == len(self.room_plan):
+            self.room_plan = []
+
+
+
+    def handle_client_join(self, name, data):
+        # reset client position to NORTH, just in case
+        self.interact.look(yaw=DIR_NORTH,pitch=0.0)
 
     # must wait for client init event, or start coords will be (0,0,0)
-    def handle_client_join(self, name, data):
-        self.interact.look(yaw=DIR_NORTH,pitch=0.0)
-        # necessary for position and orientation agent to be initialized
-        # pos = self.clientinfo.position
-        #
-        # self.state.start_loc = (pos.x, pos.y, pos.z)
-        # self.state.current_position = self.state.start_loc
-        # self.state.current_orientation = mvu.get_nearest_direction(pos.yaw)
-
     # block update handler to trigger the planner to start
     def handle_block_update(self, name, data):
         # there is a gold block. call the planner
         if data['block_data'] >> 4 == 41:
             # reset orientation to NORTH
             self.interact.look(yaw=DIR_NORTH,pitch=0.0)
+            time.sleep(3)
             # just re-initialize the start pos and angle
             pos = self.clientinfo.position
             self.state.start_loc = (int(math.floor(pos.x)), int(math.floor(pos.y)), int(math.floor(pos.z)))
@@ -103,11 +123,14 @@ class TestPlannerPlugin(PluginBase):
             z = data['location']['z']
             self.state.goal_loc = (x, y, z)
             success = self.solve()
-            print("total room plan: {}".format(self.room_plan))
-            if success:
+            if self.room_plan:
                 print("plan succeeded")
+                print("total room plan: {}".format(self.room_plan))
+                self.event.emit("planning_complete")
+                #self.execute_plan()
             else:
                 print("plan failed")
+
 
     def solve(self):
         self.room_plan = hop.plan(self.state,
@@ -115,10 +138,6 @@ class TestPlannerPlugin(PluginBase):
                             hop.get_operators(),
                             hop.get_methods(),
                             verbose=3)
-        if not self.room_plan:
-            return False
-        else:
-            return True
 
     #############
     # operators #
