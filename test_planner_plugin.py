@@ -82,7 +82,7 @@ class TestPlannerPlugin(PluginBase):
         }
 
     def register_execution_timer(self, name, data):
-        frequency = 3
+        frequency = 1.5
         self.plan_idx = 0
         self.timers.reg_event_timer(frequency, self.execution_tick)
 
