@@ -14,7 +14,8 @@ from test_agent_plugin import TestAgentPlugin
 
 from self_movement_sensor_plugin import SelfMovementSensorPlugin
 from sensor_timers_plugin import SensorTimersPlugin
-from camera_plugin import RaycastCameraPlugin
+from visual_sensor_plugin import VisualSensorPlugin
+from percept_monitor_plugin import PerceptMonitorPlugin
 
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
@@ -50,9 +51,10 @@ plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
 plugins.append(('SensorTimers', SensorTimersPlugin))
 plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
-#plugins.append(('RaycastCamera', RaycastCameraPlugin))
+plugins.append(('VisualSensor', VisualSensorPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
+plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 #plugins.append(('TestPlanner', TestPlannerPlugin))
 #plugins.append(('echo', EchoPacketPlugin))
 

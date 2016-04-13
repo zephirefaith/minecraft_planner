@@ -33,8 +33,8 @@ class AgentAbsoluteState:
         self.dir = abs_dir if abs_dir else None
 """
 
-@pl_announce('RaycastCamera')
-class RaycastCameraPlugin(PluginBase):
+@pl_announce('VisualSensor')
+class VisualSensorPlugin(PluginBase):
 
     requires = ('Event', 'Timers', 'ClientInfo', 'World')
 
@@ -44,7 +44,7 @@ class RaycastCameraPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(RaycastCameraPlugin, self).__init__(ploader, settings)
+        super(VisualSensorPlugin, self).__init__(ploader, settings)
         # not sure if this actually initializes the dict ahead of time...
         cam.init_block_mats()
         #frequency = FREQUENCY
@@ -52,7 +52,7 @@ class RaycastCameraPlugin(PluginBase):
 
     def handle_camera_tick(self, name, data):
         percept = self.handle_update_camera(data)
-
+        logger.info("sending visual percept: {}".format(percept))
         self.event.emit('agent_visual_percept', percept)
 
     def handle_client_join(self, name, data):
@@ -77,3 +77,9 @@ class RaycastCameraPlugin(PluginBase):
             data['id'], data['meta'] = self.world.get_block(data['x'], data['y'], data['z'])
             blocks.append(data)
         return blocks
+
+    def blocks_to_percept(self, blockslist):
+        pos = self.clientinfo.position
+        x,y,z = (pos.x, pos.y, pos.z)
+
+        for block in blockslist

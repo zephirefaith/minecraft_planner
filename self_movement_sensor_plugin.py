@@ -8,16 +8,14 @@ from spockbot.vector import Vector3
 from utils.constants import *
 import utils.movement_utils as mvu
 
-from pyhop import hop
-
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 # tick frequency for movement sensor
-FREQUENCY = 1
+FREQUENCY = 0.2
 
 # probably make this a subclass of some generic agent state
-class AgentMovementPrimitive(hop.State):
+class AgentMovementPrimitive():
     def __init__(self, delta_pos=None, delta_dir=None):
         # movement is forward or none. faster movement is simply higher freq
         self.delta_pos = delta_pos if delta_pos else motion_labels[MOVE_NONE]
@@ -61,9 +59,12 @@ class SelfMovementSensorPlugin(PluginBase):
     # not a normal event handler. simply triggered every x seconds
     def sensor_timer_tick(self):
         self.handle_update_sensors()
-
-        # TODO: This has to be called with some data. e.g. formatted state
-        self.event.emit('agent_movement_primitive_percept')
+        data = {
+            'delta_pos': self.motion.delta_pos,
+            'delta_dir': self.motion.delta_dir,
+        }
+        # percept: small amount of processing to determine last action
+        self.event.emit('agent_action_percept', data)
 
     def handle_client_join(self, name, data):
         pos = self.clientinfo.position

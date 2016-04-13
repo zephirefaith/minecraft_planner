@@ -257,6 +257,7 @@ class TestPlannerPlugin(PluginBase):
                     elif state.current_orientation == DIR_WEST:
                         commands.append('turn_left')
                 if state.goal_loc[0]<state.current_position[0]:
+                    if state.current_orientation == DIR_WEST:
                         state.gold_acquired = 1
                         commands.append('break_block')
                     elif state.current_orientation == DIR_EAST:
