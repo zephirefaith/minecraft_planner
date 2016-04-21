@@ -11,11 +11,6 @@ logger = logging.getLogger('spockbot')
 # Helper functions to determine changes in position and direction
 #########################################################################
 
-# convert to angle between 0 and 360 (include 0, not include 360)
-def get_abs_angle(yaw):
-    if yaw >= 0: return yaw
-    else: return 360 + yaw
-
 def get_nearest_delta_pos(prev_pos, cur_pos):
     dist = math.sqrt(
         (prev_pos.x - cur_pos.x)**2 +
@@ -60,14 +55,14 @@ def get_nearest_position(x, y, z):
 #########################################################################
 
 def log_agent_motion(primitive_action):
-    logger.info(
+    logger.debug(
         "current action: <moving: {}, turning: {}>".format(
             primitive_action.delta_pos,
             primitive_action.delta_dir,)
     )
 
 def log_agent_state(agent_state):
-    logger.debug(
+    logger.info(
         "current state: <x:{}, y:{}, z:{}, facing:{}>".format(
             agent_state.pos.x,
             agent_state.pos.y,

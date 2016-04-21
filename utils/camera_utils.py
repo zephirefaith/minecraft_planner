@@ -14,16 +14,17 @@ import numpy as np
 import time
 
 # radius of vision
-MAX_DIST = 10
+MAX_DIST = 6
 
 # step size
-D_DIST 	 = 1.
+D_DIST 	 = 0.2
 D_PITCH  = 15.
-D_YAW 	 = 15.
+D_YAW 	 = 5.
 
 # angles cover range theta - R_THETA to theta + R_THETA
-R_PITCH = 60
-R_YAW   = 60
+# e.g. R_YAW 45 means it will cover a 90 degree range
+R_PITCH = 0
+R_YAW   = 45
 
 block_mats = {}
 
@@ -56,9 +57,14 @@ def is_solid(blockid):
             return True
     return False
 
+#
+# # convert to angle between 0 and 360 (include 0, not include 360)
+# def get_abs_angle(yaw):
+#     if yaw >= 0: return yaw
+#     else: return 360 + yaw
+#
 
 def calc_ray_step(pitch, yaw, dist):
-
     pt = radians(pitch)
     yw = radians(yaw)
 
@@ -107,15 +113,16 @@ def get_visible_blocks(blocks):
     p_jump = int(floor((2*R_PITCH)/D_PITCH) + 1)
     y_jump = int(floor((2*R_YAW)/D_YAW) + 1)
     d_jump = int(floor((MAX_DIST)/D_DIST) + 1)
-    print("p jump: {}, y jump: {}, d jump: {}".format(p_jump, y_jump, d_jump))
-    print("length of blocks list: {}".format(len(blocks)))
+    #print("p jump: {}, y jump: {}, d jump: {}".format(p_jump, y_jump, d_jump))
+    #print("length of blocks list: {}".format(len(blocks)))
     #print("array version of blocks: {}".format(np.array(blocks)))
     blocks3D = np.reshape(np.array(blocks), newshape=(p_jump, y_jump, d_jump))
 
     for y_list in blocks3D:
         for d_list in y_list:
             for block in d_list:
-                xyz = (block['x'], block['y'], block['z'])
+                #xyz = (block['x'], block['y'], block['z'])
+                xyz = block['coords']
                 #print xyz
                 bid = block['id']
 
@@ -126,20 +133,21 @@ def get_visible_blocks(blocks):
                 elif xyz not in vis_blocks:
                     #print("bid: {}".format(bid))
                     #print("new block. adding to list")
-                    vis_blocks[xyz] = block
+                    #vis_blocks[xyz] = block
+                    vis_blocks[xyz] = bid
 
                     if is_solid(bid):
                         #print("block is solid, breaking out")
                         break
 
-                elif is_solid(vis_blocks[xyz]['id']):
+                elif is_solid(vis_blocks[xyz]):
                     #print("bid: {}".format(bid))
                     #print("found block: {} already at these coordinates".format(vis_blocks[xyz]['id']))
                     break
 
-    vis_blocks_list = vis_blocks.values()
+    #vis_blocks_list = vis_blocks.values()
 
     #end = time.time()
     #print "total: %f"%(end-start)
 
-    return vis_blocks_list
+    return vis_blocks

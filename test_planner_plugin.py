@@ -59,7 +59,9 @@ class TestPlannerPlugin(PluginBase):
         #     self.navigate_to_resource,      # follow the path BFS spewed out
         #     self.acquire_resource)          # break the block and move move_forward
         hop.print_methods(hop.get_methods())
+        self.init_state()
 
+    def init_state(self):
         # set state variables
         # will be used by operators and methods
         self.state = hop.State('start_state')
@@ -82,7 +84,7 @@ class TestPlannerPlugin(PluginBase):
         }
 
     def register_execution_timer(self, name, data):
-        frequency = 1.5
+        frequency = 2
         self.plan_idx = 0
         self.timers.reg_event_timer(frequency, self.execution_tick)
 
@@ -97,6 +99,7 @@ class TestPlannerPlugin(PluginBase):
         self.plan_idx += 1
         if self.plan_idx == len(self.room_plan):
             self.room_plan = []
+            self.init_state()
 
 
 
@@ -133,11 +136,14 @@ class TestPlannerPlugin(PluginBase):
 
 
     def solve(self):
+        start = time.time()
         self.room_plan = hop.plan(self.state,
                             [('get_resource',)],
                             hop.get_operators(),
                             hop.get_methods(),
                             verbose=3)
+        end = time.time()
+        print("******* total time for planning: {} ms*******".format(1000*(end-start)))
 
     #############
     # operators #
@@ -248,6 +254,7 @@ class TestPlannerPlugin(PluginBase):
                     return [('turn_right',), ('navigate',)]
                 elif state.current_orientation == DIR_EAST:
                     return [('turn_left',), ('navigate',)]
+            return []
         else:
             return False
 
@@ -303,6 +310,7 @@ class TestPlannerPlugin(PluginBase):
                     return [('turn_right',), ('acquire',)]
                 elif state.current_orientation == DIR_SOUTH:
                     return [('turn_left',), ('acquire',)]
+            return []
         else:
             # gold block is broken, but not yet acquired
             state.gold_acquired = 1

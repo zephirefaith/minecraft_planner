@@ -14,8 +14,8 @@ logger = logging.getLogger('spockbot')
 
 # tick frequency for both sensor types (visual, self-motion)
 # allows sensors to run at different freq but still be coordinated
-CAMERA_FREQUENCY = 1
-MOTION_FREQUENCY = 1
+VISION_SENSOR_FREQUENCY = 1
+MOTION_SENSOR_FREQUENCY = 0.6
 
 @pl_announce('SensorTimers')
 class SensorTimersPlugin(PluginBase):
@@ -30,10 +30,10 @@ class SensorTimersPlugin(PluginBase):
 
 
     def motion_timer_tick(self):
-        self.event.emit('sensor_tick_movement')
+        self.event.emit('sensor_tick_motion')
 
 
-    def camera_timer_tick(self):
+    def vision_timer_tick(self):
         pos = self.clientinfo.position
         data = {
             'x':pos.x,
@@ -42,9 +42,9 @@ class SensorTimersPlugin(PluginBase):
             'pitch':pos.pitch,
             'yaw':pos.yaw,
         }
-        self.event.emit('sensor_tick_camera', data)
+        self.event.emit('sensor_tick_vision', data)
 
 
     def handle_client_join(self, name, data):
-        self.timers.reg_event_timer(CAMERA_FREQUENCY, self.camera_timer_tick)
-        self.timers.reg_event_timer(MOTION_FREQUENCY, self.motion_timer_tick)
+        self.timers.reg_event_timer(VISION_SENSOR_FREQUENCY, self.vision_timer_tick)
+        self.timers.reg_event_timer(MOTION_SENSOR_FREQUENCY, self.motion_timer_tick)

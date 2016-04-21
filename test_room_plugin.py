@@ -187,7 +187,7 @@ class TestRoomPlugin(PluginBase):
             for nb in neighbors:
                 #print("looking at neighbor {0}".format(nb))
                 if (not visited[nb] and
-                    self.is_traversable(nb)and
+                    self.is_traversable(nb) and
                     nb not in search_queue):
 
                     search_queue.append(nb)
