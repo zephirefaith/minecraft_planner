@@ -14,7 +14,7 @@ __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 # tick frequency for movement sensor
-FREQUENCY = 1
+FREQUENCY = 1.0
 
 # probably make this a subclass of some generic agent state
 """

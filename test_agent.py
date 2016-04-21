@@ -51,7 +51,7 @@ plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
 
 plugins.append(('SensorTimers', SensorTimersPlugin))
-#plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
+plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
 #plugins.append(('VisualSensor', VisualSensorPlugin))
 #plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 

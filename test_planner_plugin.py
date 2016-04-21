@@ -45,7 +45,7 @@ class TestPlannerPlugin(PluginBase):
         hop.print_operators(hop.get_operators())
 
         # for the main task (so far only one option)
-        hop.declare_methods('get_resource',self.get_resource)
+        hop.declare_methods('get_resource', self.get_resource)
 
         # for each sub-task of the main task
         hop.declare_methods('find_route', self.find_route_to_resource)
@@ -92,7 +92,7 @@ class TestPlannerPlugin(PluginBase):
             return
         plan_op = self.room_plan[self.plan_idx][0]
         op_fn = self.op_translations[plan_op]
-        print("current object in plan: {}".format(plan_op))
+        #print("current object in plan: {}".format(plan_op))
         op_fn()
         self.plan_idx += 1
         if self.plan_idx == len(self.room_plan):
@@ -110,8 +110,8 @@ class TestPlannerPlugin(PluginBase):
         # there is a gold block. call the planner
         if data['block_data'] >> 4 == 41:
             # reset orientation to NORTH
-            self.interact.look(yaw=DIR_NORTH,pitch=0.0)
-            time.sleep(3)
+            #self.interact.look(yaw=DIR_NORTH,pitch=0.0)
+            #time.sleep(3)
             # just re-initialize the start pos and angle
             pos = self.clientinfo.position
             self.state.start_loc = (int(math.floor(pos.x)), int(math.floor(pos.y)), int(math.floor(pos.z)))

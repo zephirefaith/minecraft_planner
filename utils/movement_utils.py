@@ -11,6 +11,7 @@ logger = logging.getLogger('spockbot')
 # Helper functions to determine changes in position and direction
 #########################################################################
 
+# convert to angle between 0 and 360 (include 0, not include 360)
 def get_abs_angle(yaw):
     if yaw >= 0: return yaw
     else: return 360 + yaw
@@ -25,16 +26,14 @@ def get_nearest_delta_pos(prev_pos, cur_pos):
     return MOVE_NONE
 
 def get_nearest_delta_dir(prev_dir, cur_dir):
-    prev_angle = get_abs_angle(prev_dir)
-    cur_angle = get_abs_angle(cur_dir)
-    delta = cur_angle - prev_angle
-    # print("current delta: {}".format(delta))
-    if abs(delta - TURN_LEFT) < EPSILON_DIR:
-        # print("returning TURN_LEFT value")
+    nearest_prev_dir = get_nearest_direction(prev_dir)
+    nearest_cur_dir = get_nearest_direction(cur_dir)
+    if look_left_deltas[nearest_prev_dir] == nearest_cur_dir:
         return TURN_LEFT
-    elif abs(delta - TURN_RIGHT) < EPSILON_DIR:
-        # print("returning TURN_RIGHT value")
+    if look_right_deltas[nearest_prev_dir] == nearest_cur_dir:
         return TURN_RIGHT
+    # remaining cases: angle difference is 0 or 180
+    # one is lack of movement, the other is illegal;
     return TURN_NONE
 
 #########################################################################
@@ -61,7 +60,7 @@ def get_nearest_position(x, y, z):
 #########################################################################
 
 def log_agent_motion(primitive_action):
-    logger.debug(
+    logger.info(
         "current action: <moving: {}, turning: {}>".format(
             primitive_action.delta_pos,
             primitive_action.delta_dir,)

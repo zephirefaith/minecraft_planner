@@ -12,7 +12,7 @@ __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
 # tick frequency for movement sensor
-FREQUENCY = 0.2
+FREQUENCY = 0.4
 
 # probably make this a subclass of some generic agent state
 class AgentMovementPrimitive():
@@ -76,16 +76,20 @@ class SelfMovementSensorPlugin(PluginBase):
 
     def handle_update_sensors(self):
         pos = self.clientinfo.position
-        # update absolute state as well as current movement primitive
-        delta_pos = mvu.get_nearest_delta_pos(self.state.pos, Vector3(pos.x, pos.y, pos.z))
-        self.motion.delta_pos = motion_labels[delta_pos]
-        delta_dir = mvu.get_nearest_delta_dir(self.state.dir, pos.yaw)
-        self.motion.delta_dir = motion_labels[delta_dir]
-
+        # discretize the absolute position and direction
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        self.state.pos = Vector3(x, y, z)
-        facing = mvu.get_nearest_direction(pos.yaw)
-        self.state.dir = facing
+        cur_pos = Vector3(x, y, z)
+        cur_dir = mvu.get_nearest_direction(pos.yaw)
+
+        # update absolute state as well as current movement primitive
+        delta_pos = mvu.get_nearest_delta_pos(self.state.pos, cur_pos)
+        self.motion.delta_pos = motion_labels[delta_pos]
+        delta_dir = mvu.get_nearest_delta_dir(self.state.dir, cur_dir)
+        self.motion.delta_dir = motion_labels[delta_dir]
+        #print("delta pos: {}, delta dir: {}".format(delta_pos, delta_dir))
+
+        self.state.pos = cur_pos
+        self.state.dir = cur_dir
 
         mvu.log_agent_motion(self.motion)
         mvu.log_agent_state(self.state)
