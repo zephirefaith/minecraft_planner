@@ -127,11 +127,16 @@ class FovUtils:
 
         return (left, right)
 
+    def compare_floats(f1, f2):
+        if abs(f2-f1) < 0.0000001:
+            return 0
+        else:
+            return f2-f1
 
     def is_visible(self, h, d, left, right):
         minh = (d/left)
         maxh = (d/right)
-        if h > minh and h+1 < maxh:
+        if h >= minh and h+1 <= maxh:
             return False
         return True
 
