@@ -14,7 +14,7 @@ from test_agent_plugin import TestAgentPlugin
 
 from self_movement_sensor_plugin import SelfMovementSensorPlugin
 from sensor_timers_plugin import SensorTimersPlugin
-from visual_sensor_plugin import VisualSensorPlugin
+from visual_sensor2_plugin import VisualSensor2Plugin
 from percept_monitor_plugin import PerceptMonitorPlugin
 
 from atomic_operators_plugin import AtomicOperatorsPlugin
@@ -52,7 +52,7 @@ plugins.append(('TestRoom', TestRoomPlugin))
 
 plugins.append(('SensorTimers', SensorTimersPlugin))
 plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
-plugins.append(('VisualSensor', VisualSensorPlugin))
+plugins.append(('VisualSensor2', VisualSensor2Plugin))
 plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
