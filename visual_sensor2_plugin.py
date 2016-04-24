@@ -28,7 +28,7 @@ class VisualSensor2Plugin(PluginBase):
     def __init__(self, ploader, settings):
         super(VisualSensor2Plugin, self).__init__(ploader, settings)
         # not sure if this actually initializes the dict ahead of time...
-        self.fov = FovUtils(max_dist=10)
+        self.fov = FovUtils(self.world, max_dist=10)
 
     def handle_camera_tick(self, name, data):
         start = time.time()
@@ -46,29 +46,18 @@ class VisualSensor2Plugin(PluginBase):
         pass
 
     def get_visible_blocks(self, data):
-        self.fov.set_cur_pos(data['x'], data['y'], data['z'], data['pitch'], data['yaw'])
-        rel_coords = self.fov.get_rel_fov()
-        blocked = set()
-        visible = {coord:None for coord in rel_coords}
-        for h,d in rel_coords:
-            if (h,d) not in blocked:
-                ax,ay,az = self.fov.rel_to_abs(h,d)
-                block_id,block_meta = self.world.get_block(ax,ay,az)
-                visible[(h,d)] = block_id
-                if self.fov.is_solid(block_id):
-                    blocked |= self.fov.get_blocked(h,d)
-
+        visible = self.fov.update_percept(data)
         return visible
 
-    def draw_percept(self, visual_percept):
-        coords = self.fov.get_rel_fov()
+    def draw_percept(self, percept):
+        coords = self.fov.rel_fov
         max_dist = self.fov.max_dist
         print("__"*max_dist*2)
         for i in reversed(range(max_dist)):
             cur_list = [" "]*(max_dist*2 - 1)
             cur_coords = [(h,d) for h,d in coords if d == i]
-            cur_blocked = [(h,d) for h,d in visual_percept if d == i and visual_percept[(h,d)] is None]
-            cur_solid = [(h,d) for h,d in visual_percept if d == i and visual_percept[(h,d)] != 0 and visual_percept[(h,d)] != None]
+            cur_blocked = [(h,d) for h,d in percept if d == i and percept[(h,d)] is None]
+            cur_solid = [(h,d) for h,d in percept if d == i and percept[(h,d)] != 0 and percept[(h,d)] != None]
             #print("blocked")
             for h,d in cur_blocked:
                 #print("h: {}".format(h))
