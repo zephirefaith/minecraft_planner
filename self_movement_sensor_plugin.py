@@ -11,7 +11,6 @@ import utils.movement_utils as mvu
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
-
 class AgentMovementPrimitive():
     def __init__(self, delta_pos=None, delta_dir=None):
         # movement is forward or none. faster movement is simply higher freq
@@ -22,6 +21,7 @@ class AgentMovementPrimitive():
 class AgentAbsoluteState:
     def __init__(self, abs_pos=None, abs_dir=None):
         # A Vector3 of (x,y,z) coordinates
+        # should this be converted to a tuple for simplicity?
         self.pos = abs_pos if abs_pos else None
         # compass direction in Minecraft yaw angle values
         self.dir = abs_dir if abs_dir else None
@@ -35,27 +35,22 @@ class SelfMovementSensorPlugin(PluginBase):
         'movement_position_reset':  'handle_position_reset',
         'movement_path_done':       'handle_path_done',
         'client_join_game':         'handle_client_join',
-        'sensor_tick_motion':         'handle_update_sensors',
+        'sensor_tick_motion':       'handle_update_sensors',
     }
 
     def __init__(self, ploader, settings):
         super(SelfMovementSensorPlugin, self).__init__(ploader, settings)
         # agent's records of its own motion
-        # egocentric (not grounded in any world knowledge)
+        # egocentric (not grounded in world knowledge)
         self.motion = AgentMovementPrimitive()
         # previous absolute position/direction the world
         # used for computing motion internally. *not recorded by agent*
         self.state = AgentAbsoluteState()
-        # THIS HAS BEEN REPLACED BY TIMER IN SENSOR TIMERS PLUGIN
-        # timer to update the agent's knowledge of its own movement
-        # frequency = FREQUENCY
-        # self.timers.reg_event_timer(frequency, self.sensor_timer_tick)
 
     #########################################################################
     # Timers and event handlers
     #########################################################################
 
-    # not a normal event handler. simply triggered every x seconds
     def sensor_timer_tick(self):
         self.handle_update_sensors()
         data = {

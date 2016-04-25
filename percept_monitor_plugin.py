@@ -17,20 +17,20 @@ class PerceptMonitorCore(object):
         self.monitor = monitor
 
     def get_visual_percept(self):
-        return self.monitor.visual_percept
+        return self.monitor.visual
 
     def get_movement_percept(self):
-        return self.monitor.movement_percept
+        return self.monitor.motion
 
 
 @pl_announce('PerceptMonitor')
 class PerceptMonitorPlugin(PluginBase):
-    requires = ('Event', 'Timers',)
+    requires = ('Event', 'Timers')
     events = {
         # FOV. list of coordinates and block ids
         'agent_visual_percept': 'handle_visual_percept',
         # physical action taken in the last motion perception timestep
-        'agent_action_percept':'handle_action_percept',
+        'agent_motion_percept':'handle_motion_percept',
         # what the agent currently 'has' on its body
         'agent_inventory_percept':'handle_inventory_percept',
         # the objects the agent is currently thinking about (WM?)
@@ -43,36 +43,31 @@ class PerceptMonitorPlugin(PluginBase):
         super(PerceptMonitorPlugin, self).__init__(ploader, settings)
 
         self.visual = None
-        self.action = None
+        self.motion = None
         self.inventory = None
         self.mental_field = None
         self.mental_action = None
-
+        self.percept_vector = None
 
         self.core = PerceptMonitorCore(self)
         # for the getter functions in PerceptMonitorCore
         ploader.provides('PerceptMonitor', self.core)
 
-
     def handle_visual_percept(self, name, data):
         logger.debug("received visual percept: {}".format(data))
         self.visual_percept = data
 
-
-    def handle_action_percept(self, name, data):
+    def handle_motion_percept(self, name, data):
         logger.debug("received action percept: {}".format(data))
         self.action_percept = data
 
-
     def handle_inventory_percept(self, name, data):
         logger.debug("received inventory percept: {}".format(data))
-
 
     # TODO: figure out if this is actually necessary
     # maybe can be compared just inside the planner?
     def handle_mental_field_percept(self, name, data):
         logger.debug("received mental field percept: {}".format(data))
-
 
     def handle_mental_action_percept(self, name, data):
         logger.debug("received mental action percept: {}".format(data))

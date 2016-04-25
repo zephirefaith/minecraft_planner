@@ -1,6 +1,4 @@
-
 """
-created by Bradley Sheneman
 second iteration of the ray-casting camera.
 treats Minecraft block as smallest discrete unit of world, rather than a continuous 3D world
 calculates set of visible blocks for a givent client position pitch and yaw (head)
@@ -9,10 +7,13 @@ calculates set of visible blocks for a givent client position pitch and yaw (hea
 from math import pi, floor, sqrt
 import numpy as np
 import time
+import logging
 
 import utils.movement_utils as mov
 from utils.constants import *
 
+__author__ = 'Bradley Sheneman'
+logger = logging.getLogger('spockbot')
 # radius of vision
 MAX_DIST = 10
 
@@ -249,6 +250,30 @@ class FovUtils:
         # WEST is -x
         if self.dir == DIR_WEST:
             return -(z-az), -(x-ax)
+
+    def draw_visual_percept(self, percept):
+        coords = self.rel_fov
+        max_dist = self.max_dist
+        full_string = "\n" + "__"*max_dist*2 + "\n"
+        for i in reversed(range(max_dist)):
+            cur_list = [" "]*(max_dist*2 - 1)
+            full_string += "|"
+            cur_coords = [(h,d) for h,d in coords
+                if (d == i)]
+            cur_blocked = [(h,d) for h,d in percept
+                if (d == i and percept[(h,d)] is None)]
+            cur_solid = [(h,d) for h,d in percept
+                if (d == i and percept[(h,d)] != 0 and percept[(h,d)] != None)]
+            for h,d in cur_blocked:
+                cur_list[h+(max_dist-1)] = "-"
+            for h,d in cur_solid:
+                cur_list[h+(max_dist-1)] = "#"
+            for ch in cur_list:
+                full_string += (ch + "|")
+            full_string += "\n"
+            #print(full_string)
+        full_string += "__"*max_dist*2 + "\n"
+        logger.info("current visual percept: {}".format(full_string))
 
 if __name__ == "__main__":
     # attempt to initialize

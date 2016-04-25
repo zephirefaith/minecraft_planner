@@ -24,8 +24,8 @@ from test_planner_plugin import TestPlannerPlugin
 # spock utilities and plugins
 from spockbot import Client
 from spockbot.plugins import default_plugins
-sys.path.insert(0, os.path.abspath('../SpockBot-Extra'))
-from plugins.echo_packet import EchoPacketPlugin
+#sys.path.insert(0, os.path.abspath('../SpockBot-Extra'))
+#from plugins.echo_packet import EchoPacketPlugin
 
 __author__ = 'Bradley Sheneman'
 

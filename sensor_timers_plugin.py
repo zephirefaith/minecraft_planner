@@ -28,10 +28,8 @@ class SensorTimersPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(SensorTimersPlugin, self).__init__(ploader, settings)
 
-
     def motion_timer_tick(self):
         self.event.emit('sensor_tick_motion')
-
 
     def vision_timer_tick(self):
         pos = self.clientinfo.position
@@ -43,7 +41,6 @@ class SensorTimersPlugin(PluginBase):
             'yaw':pos.yaw,
         }
         self.event.emit('sensor_tick_vision', data)
-
 
     def handle_client_join(self, name, data):
         self.timers.reg_event_timer(VISION_SENSOR_FREQUENCY, self.vision_timer_tick)

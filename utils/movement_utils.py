@@ -55,14 +55,14 @@ def get_nearest_position(x, y, z):
 #########################################################################
 
 def log_agent_motion(primitive_action):
-    logger.debug(
-        "current action: <moving: {}, turning: {}>".format(
+    logger.info(
+        "current motion percept: <moving: {}, turning: {}>".format(
             primitive_action.delta_pos,
             primitive_action.delta_dir,)
     )
 
 def log_agent_state(agent_state):
-    logger.info(
+    logger.debug(
         "current state: <x:{}, y:{}, z:{}, facing:{}>".format(
             agent_state.pos.x,
             agent_state.pos.y,

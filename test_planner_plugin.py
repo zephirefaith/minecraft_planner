@@ -17,15 +17,19 @@ from utils.constants import *
 __author__ = 'Priyam Parashar'
 logger = logging.getLogger('spockbot')
 
+ACTION_TICK_FREQUENCY = 1.0
+
 @pl_announce('TestPlanner')
 class TestPlannerPlugin(PluginBase):
 
-    requires = ('Event', 'Timers', 'ClientInfo', 'AtomicOperators', 'Interact', 'World', 'TestRoom',)
+    requires = ('Event', 'Timers', 'ClientInfo', 'AtomicOperators', 'Interact',
+                'World', 'TestRoom', 'PerceptMonitor')
 
     events = {
-        'world_block_update':   'handle_block_update',
-        'client_join_game':     'handle_client_join',
-        'planning_complete':    'register_execution_timer'
+        'world_block_update':       'handle_block_update',
+        #'client_join_game':         'handle_client_join',
+        'agent_planning_complete':  'register_execution_timer',
+        #'agent_planning_failed':   'register_repair_timer',
     }
 
     def __init__(self, ploader, settings):
@@ -36,6 +40,7 @@ class TestPlannerPlugin(PluginBase):
 
     def init_planner(self):
         logger.info("adding atomic operators to pyhop")
+        self.init_state()
         # note: can call declare_operators multiple times for current situation
         hop.declare_operators(
             self.move_forward,
@@ -43,30 +48,17 @@ class TestPlannerPlugin(PluginBase):
             self.turn_right,
             self.break_block)
         hop.print_operators(hop.get_operators())
-
-        # for the main task (so far only one option)
+        # for the main task
         hop.declare_methods('get_resource', self.get_resource)
-
         # for each sub-task of the main task
         hop.declare_methods('find_route', self.find_route_to_resource)
         hop.declare_methods('navigate', self.navigate_to_resource)
         hop.declare_methods('acquire', self.acquire_resource)
-
-        # methods will be nested
-        # hop.declare_methods(
-        #     'get_resource',
-        #     self.find_route_to_resource,    # BFS() or A*
-        #     self.navigate_to_resource,      # follow the path BFS spewed out
-        #     self.acquire_resource)          # break the block and move move_forward
         hop.print_methods(hop.get_methods())
-        self.init_state()
 
     def init_state(self):
-        # set state variables
-        # will be used by operators and methods
+        # set state variables to be used by operators and methods
         self.state = hop.State('start_state')
-        #state.start_loc = self.start_location
-        #state.goal_loc = self.gold_location
         self.state.gold = 1 # 1: unbroken, 0: broken
         self.state.path = []
         self.state.gold_reached = 0
@@ -80,60 +72,43 @@ class TestPlannerPlugin(PluginBase):
             'move_forward': self.atomicoperators.operator_move,
             'turn_left': self.atomicoperators.operator_look_left,
             'turn_right': self.atomicoperators.operator_look_right,
-            'break_block': self.atomicoperators.operator_break_obstacle,
-        }
+            'break_block': self.atomicoperators.operator_break_obstacle,}
 
     def register_execution_timer(self, name, data):
-        frequency = 2
-        self.plan_idx = 0
-        self.timers.reg_event_timer(frequency, self.execution_tick)
+        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execution_tick)
 
     def execution_tick(self):
         if not self.room_plan:
             print("no plan to execute")
             return
         plan_op = self.room_plan[self.plan_idx][0]
-        op_fn = self.op_translations[plan_op]
-        #print("current object in plan: {}".format(plan_op))
-        op_fn()
+        self.op_translations[plan_op]()
         self.plan_idx += 1
         if self.plan_idx == len(self.room_plan):
             self.room_plan = []
             self.init_state()
 
-
-
-    def handle_client_join(self, name, data):
-        # reset client position to NORTH, just in case
-        self.interact.look(yaw=DIR_NORTH,pitch=0.0)
-
-    # must wait for client init event, or start coords will be (0,0,0)
-    # block update handler to trigger the planner to start
     def handle_block_update(self, name, data):
-        # there is a gold block. call the planner
+        # gold block spawned in world. call the planner
         if data['block_data'] >> 4 == 41:
-            # reset orientation to NORTH
-            #self.interact.look(yaw=DIR_NORTH,pitch=0.0)
-            #time.sleep(3)
-            # just re-initialize the start pos and angle
             pos = self.clientinfo.position
-            self.state.start_loc = (int(math.floor(pos.x)), int(math.floor(pos.y)), int(math.floor(pos.z)))
+            self.state.start_loc = mvu.get_nearest_position(pos.x, pos.y, pos.z)
             self.state.current_position = self.state.start_loc
             self.state.current_orientation = mvu.get_nearest_direction(pos.yaw)
 
-            x = data['location']['x']
-            y = data['location']['y']
-            z = data['location']['z']
-            self.state.goal_loc = (x, y, z)
-            success = self.solve()
-            if self.room_plan:
-                print("plan succeeded")
-                print("total room plan: {}".format(self.room_plan))
-                self.event.emit("planning_complete")
-                #self.execute_plan()
-            else:
-                print("plan failed")
+            block_pos = data['location']
+            self.state.goal_loc = (block_pos['x'], block_pos['y'], block_pos['z'])
 
+            self.solve()
+
+            if self.room_plan is not None and len(self.room_plan) > 0:
+                logger.info("plan succeeded")
+                logger.info("total room plan: {}".format(self.room_plan))
+                self.event.emit("agent_planning_complete")
+                self.plan_idx = 0
+            else:
+                logger.info("plan failed")
+                self.event.emit("agent_planning_failed")
 
     def solve(self):
         start = time.time()
@@ -141,15 +116,14 @@ class TestPlannerPlugin(PluginBase):
                             [('get_resource',)],
                             hop.get_operators(),
                             hop.get_methods(),
-                            verbose=3)
+                            verbose=1)
         end = time.time()
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
 
-    #############
-    # operators #
-    #############
+    #########################################################################
+    # operators
+    #########################################################################
 
-    # assuming location to be (x,y)
     def move_forward(self, state):
         #state = copy.deepcopy(state)
         x,y,z = state.current_position
@@ -165,13 +139,11 @@ class TestPlannerPlugin(PluginBase):
 
     def turn_left(self, state):
         state = copy.deepcopy(state)
-        #state.current_orientation = state.current_orientation + 1
         state.current_orientation = look_left_deltas[state.current_orientation]
         return state
 
     def turn_right(self, state):
         state = copy.deepcopy(state)
-        #state.current_orientation = state.current_orientation - 1
         state.current_orientation = look_right_deltas[state.current_orientation]
         return state
 
@@ -182,17 +154,15 @@ class TestPlannerPlugin(PluginBase):
             return state
         return False
 
-    ###########
-    # methods #
-    ###########
+    #########################################################################
+    # methods
+    #########################################################################
     # main task method. currently only way to get the resource
     def get_resource(self, state):
-        #state = copy.deepcopy(state)
         print("calling get_resource")
         return [('find_route',),('navigate',),('acquire',)]
 
     def find_route_to_resource(self, state):
-        #state = copy.deepcopy(state)
         print("calling find_route with state: {}".format(state.__name__))
         if not state.path:
             state.path = self.testroom.compute_path(state.current_position, state.goal_loc)
@@ -205,9 +175,7 @@ class TestPlannerPlugin(PluginBase):
         return []
 
     def navigate_to_resource(self, state):
-        #state = copy.deepcopy(state)
         print("calling navigate with state: {}".format(state.__name__))
-
         if state.path_idx == (len(state.path) - 1):
             state.gold_reached = 1
             return []
@@ -258,13 +226,11 @@ class TestPlannerPlugin(PluginBase):
         else:
             return False
 
-
     def acquire_resource(self, state):
         #state = copy.deepcopy(state)
         print("calling acquire with state: {}".format(state.__name__))
         if state.gold_acquired == 1:
             return []
-
         if state.gold_reached == 1 and state.gold_broken == 0:
             #gold block is unbroken
             #face the block, if already facing then break the block
