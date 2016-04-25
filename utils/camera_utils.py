@@ -29,7 +29,12 @@ def compare_floats(f1, f2):
 def distance(x1, y1, x2, y2):
     return sqrt((x2-x1)**2 + (y2-y1)**2)
 
+def offset_origin(x, y):
+    x1, y1 = (x + 0.5, y + 0.5)
+    return distance(0.5, 0.5, x1, y1)
+
 # 'run over rise' creates multiplicative factors (fewer divisions later on)
+# 0.5 is important, because rays are cast from (0.5, 0.5)
 def get_ray_factors(h, d):
     if h < 0.5:
         # lower left corner
@@ -38,8 +43,10 @@ def get_ray_factors(h, d):
         # upper left corner
         left = (h - 0.5)/(d+1 - 0.5)
     if (h+1) < 0.5:
+        # upper right corner
         right = (h+1 - 0.5)/(d+1 - 0.5)
     else:
+        # lower right corner
         right = (h+1 - 0.5)/(d - 0.5)
     return (left, right)
 
@@ -47,24 +54,20 @@ def get_ray_factors(h, d):
 # form with that point to get the new x vals: minh and maxh
 def is_visible(h, d, left, right):
     if h < 0.5:
-        #print("h less than 0.5")
         minh = ((d-0.5)*left + 0.5)
     else:
-        #print("h greater than 0.5")
         minh = ((d+1-0.5)*left + 0.5)
     if (h+1) < 0.5:
-        #print("h+1 less than 0.5")
         maxh = ((d+1-0.5)*right + 0.5)
     else:
-        #print("h+1 greater than 0.5")
         maxh = ((d-0.5)*right + 0.5)
-    #print("minh: {}, maxh: {}".format(minh, maxh))
     if compare_floats(h,minh) > 0 and compare_floats(h+1,maxh) < 0:
         return False
     return True
 
 #############################################################################
 # Initializes game materials, and whether or not they are solid
+# Not comprehensive, but includes most common blocks
 #############################################################################
 class MinecraftMaterials:
     def __init__(self):
@@ -72,7 +75,6 @@ class MinecraftMaterials:
         self.init_block_mats()
 
     def init_block_mats(self):
-        # not comprehensive but includes most common blocks
         blocks = [i for i in range(43+1)]
         solids = []
         for i in range(1,5+1,1):
@@ -103,13 +105,11 @@ class FovUtils:
     def __init__(self, world, max_dist=MAX_DIST):
         self.max_dist = max_dist
         self.world = world
-        ray_factors = get_ray_factors(1,4)
-        print("ray factors for 1,4: {}".format(ray_factors))
-        print(is_visible(1,5,*ray_factors))
 
         self.ray_factors = dict()
         self.rel_fov = list()
         self.percept = dict()
+
         self.single_blocking = dict()
         self.pair_blocking = dict()
 
@@ -118,23 +118,20 @@ class FovUtils:
         self.init_pair_blocking()
         self.materials = MinecraftMaterials()
 
-        print("single blocking for (1,4): {}".format(self.single_blocking[(1,4)]))
-        #print("relative fov coords: {}\n".format(self.rel_fov))
-        # print("blocked by a single position:")
-        # for key in self.single_blocking:
-        #     print("this: {} blocks these: {}".format(key,self.single_blocking[key]))
-
     def init_fov(self):
-        self.rel_fov = [(hi,di) for di in range(self.max_dist) for hi in range(-di,di+1)]
+        self.rel_fov = [(hi,di)
+            for di in range(self.max_dist)
+            for hi in range(-di,di+1)]
 
     def init_single_blocking(self):
-        self.ray_factors = {(h1,d1):get_ray_factors(h1,d1) for h1,d1 in self.rel_fov}
+        self.ray_factors = {(h1,d1):get_ray_factors(h1,d1)
+            for h1,d1 in self.rel_fov}
         self.single_blocking = {
             (h1,d1):{(h2,d2)
                     for h2,d2 in self.rel_fov
                     if (d2>d1
                         and (not is_visible(h2,d2,*self.ray_factors[(h1,d1)]))
-                        and (distance(0.5, 0.5, h1+0.5, d1+0.5) < distance(0.5, 0.5, h2+0.5, d2+0.5)))
+                        and (offset_origin(h1, d1) < offset_origin(h2, d2)))
                     }
             for h1,d1 in self.ray_factors
         }
@@ -143,19 +140,22 @@ class FovUtils:
         for h,d in self.rel_fov:
             neighbors = self.get_neighbors(h,d)
             for hn,dn in neighbors:
-                if ((h,d),(hn,dn)) in self.pair_blocking or ((hn,dn),(h,d)) in self.pair_blocking:
+                if (((h,d),(hn,dn)) in self.pair_blocking or
+                    ((hn,dn),(h,d)) in self.pair_blocking):
                     continue
-                left_factors,right_factors = zip(self.ray_factors[(h,d)], self.ray_factors[(hn,dn)])
+                left_factors,right_factors = zip(
+                    self.ray_factors[(h,d)],
+                    self.ray_factors[(hn,dn)]
+                )
                 left_most = min(left_factors)
                 right_most = max(right_factors)
-
                 self.pair_blocking[((h,d),(hn,dn))] = set()
                 for hb,db in self.rel_fov:
                     if (hb,db) == (hn,dn) or (hb,db) == (h,d):
                         continue
                     if is_visible(hb, db, left_most, right_most):
                         continue
-                    if distance(0.5,0.5,hb+0.5,db+0.5) < (distance(0.5,0.5,(h+hn+1)/2.,(d+dn+1)/2.)):
+                    if offset_origin(hb, db) < offset_origin((h+hn)/2.,(d+dn)/2.):
                         continue
                     self.pair_blocking[((h,d),(hn,dn))].add((hb,db))
 
@@ -196,7 +196,6 @@ class FovUtils:
 
     def is_blocked(self, h, d):
         if (h,d) in self.cur_blocked:
-            #print("coordinate: {} is single blocked".format((h,d)))
             return True
         return False
 
@@ -249,4 +248,5 @@ class FovUtils:
             return -(z-az), -(x-ax)
 
 if __name__ == "__main__":
+    # attempt to initialize
     my_fov_utils = FovUtils(max_dist=10)
