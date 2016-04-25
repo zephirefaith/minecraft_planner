@@ -147,9 +147,12 @@ class FovUtils:
                     self.ray_factors[(h,d)],
                     self.ray_factors[(hn,dn)]
                 )
+                # ray factors (1/m) have the nice property of increasing
+                # monotonically from left to right of FOV
                 left_most = min(left_factors)
                 right_most = max(right_factors)
-                self.pair_blocking[((h,d),(hn,dn))] = set()
+                pair = ((h,d),(hn,dn))
+                self.pair_blocking[pair] = set()
                 for hb,db in self.rel_fov:
                     if (hb,db) == (hn,dn) or (hb,db) == (h,d):
                         continue
@@ -157,14 +160,14 @@ class FovUtils:
                         continue
                     if offset_origin(hb, db) < offset_origin((h+hn)/2.,(d+dn)/2.):
                         continue
-                    self.pair_blocking[((h,d),(hn,dn))].add((hb,db))
+                    self.pair_blocking[pair].add((hb,db))
 
     def get_neighbors(self, h, d):
+        # diagonals first, since they block most
         neighbors = [
-            # diagonals first, since they block most
             (h-1,d-1), (h+1,d-1), (h-1,d+1), (h-1,d-1),
-            # perpendiculars
-            (h,d-1), (h,d+1), (h-1,d), (h+1,d)]
+            (h,d-1), (h,d+1), (h-1,d), (h+1,d)
+        ]
         neighbors = [(hn,dn) for hn,dn in neighbors if self.pos_in_range(hn,dn)]
         return neighbors
 
