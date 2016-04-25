@@ -9,7 +9,7 @@ from spockbot.vector import Vector3
 
 from utils.constants import *
 import utils.movement_utils as mov
-import utils.camera_utils as cam
+from utils.camera_utils import FovUtils
 
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
@@ -28,47 +28,46 @@ class VisualSensorPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(VisualSensorPlugin, self).__init__(ploader, settings)
         # not sure if this actually initializes the dict ahead of time...
-        cam.init_block_mats()
+        self.fov = FovUtils(self.world, max_dist=10)
 
     def handle_camera_tick(self, name, data):
         start = time.time()
         blocks_percept = self.get_visible_blocks(data)
-        relative_percept = self.percept_to_relative(blocks_percept)
         end = time.time()
         print("total ms for camera tick: {}".format(1000*(end-start)))
-        logger.info("visual percept: {}".format(blocks_percept))
-        logger.info("relative visual percept: {}".format(relative_percept))
-        self.event.emit('agent_visual_percept', relative_percept)
+        self.draw_percept(blocks_percept)
+        #logger.info("visual percept: {}".format(blocks_percept))
+        print("visual percept: ")
+        # for item in blocks_percept:
+        #     print("{} : {}".format(item, blocks_percept[item]))
+        self.event.emit('agent_visual_percept', blocks_percept)
 
     def handle_client_join(self, name, data):
         pass
 
     def get_visible_blocks(self, data):
-        # all block coordinates in the FOV cone (ignoring visibility)
-        coords = cam.get_coordinates_in_range(data)
-        #print("coordinates: {}".format(coords))
-        # the actual block types given the world, at those locations
-        blocks = self.get_block_multi(coords)
-        #print("blocks: {}".format(blocks))
-        vis_blocks = cam.get_visible_blocks(blocks)
-        #mov.log_agent_vision(vis_blocks)
-        return vis_blocks
+        visible = self.fov.update_percept(data)
+        return visible
 
-    def get_block_multi(self, coords):
-        blocks = list()
-        for pos in coords:
-            data = copy.copy(pos)
-            data = dict()
-            data['coords'] = (pos['x'],pos['y'],pos['z'])
-            data['id'], data['meta'] = self.world.get_block(*data['coords'])
-            blocks.append(data)
-        return blocks
-
-    def percept_to_relative(self, percept):
-        pos = self.clientinfo.position
-        pos_coords = mov.get_nearest_position(pos.x, pos.y, pos.z)
-        rel_percept = dict()
-        for xyz in percept:
-            rel_coords = tuple([p1-p0 for p0,p1 in zip(pos_coords,xyz)])
-            rel_percept[rel_coords] = percept[xyz]
-        return rel_percept
+    def draw_percept(self, percept):
+        coords = self.fov.rel_fov
+        max_dist = self.fov.max_dist
+        print("__"*max_dist*2)
+        for i in reversed(range(max_dist)):
+            cur_list = [" "]*(max_dist*2 - 1)
+            cur_coords = [(h,d) for h,d in coords if d == i]
+            cur_blocked = [(h,d) for h,d in percept if d == i and percept[(h,d)] is None]
+            cur_solid = [(h,d) for h,d in percept if d == i and percept[(h,d)] != 0 and percept[(h,d)] != None]
+            #print("blocked")
+            for h,d in cur_blocked:
+                #print("h: {}".format(h))
+                cur_list[h+(max_dist-1)] = "-"
+            #print("solid")
+            for h,d in cur_solid:
+                #print("h: {}".format(h))
+                cur_list[h+(max_dist-1)] = "#"
+            full_string = "|"
+            for ch in cur_list:
+                full_string += (ch + "|")
+            print(full_string)
+        print("__"*max_dist*2)

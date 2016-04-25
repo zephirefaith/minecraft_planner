@@ -1,153 +1,252 @@
+
 """
 created by Bradley Sheneman
+second iteration of the ray-casting camera.
+treats Minecraft block as smallest discrete unit of world, rather than a continuous 3D world
 calculates set of visible blocks for a givent client position pitch and yaw (head)
 """
 
-#import roslib; roslib.load_manifest('minecraft_bot')
-#import rospy
-#from minecraft_bot.srv import get_block_multi_srv
-#from minecraft_bot.msg import map_block_msg, vec3_msg
-
-from math import sin, cos, radians, pi, floor
+from math import pi, floor, sqrt
 import numpy as np
-#from sys import argv
 import time
 
+import utils.movement_utils as mov
+from utils.constants import *
+
 # radius of vision
-MAX_DIST = 6
+MAX_DIST = 10
 
-# step size
-D_DIST 	 = 0.2
-D_PITCH  = 15.
-D_YAW 	 = 5.
-
-# angles cover range theta - R_THETA to theta + R_THETA
-# e.g. R_YAW 45 means it will cover a 90 degree range
-R_PITCH = 0
-R_YAW   = 45
-
-block_mats = {}
-
-def init_block_mats():
-    # this is not a comprehensive list, but includes most common solid blocks
-    blocks = [i for i in range(43+1)]
-    solids = []
-    for i in range(1,5+1,1):
-            solids.append(i)
-    solids.append(7)
-    for i in range(12,17+1,1):
-            solids.append(i)
-    solids.append(19)
-    for i in range(21,25+1,1):
-            solids.append(i)
-    solids.append(35)
-    for i in range(41,43+1,1):
-            solids.append(i)
-
-    for blockid in blocks:
-        block_mats[blockid] = False
-
-    for blockid in solids:
-        block_mats[blockid] = True
-
-
-def is_solid(blockid):
-    #print blockid
-    if block_mats[blockid] == True:
-            return True
-    return False
-
-#
-# # convert to angle between 0 and 360 (include 0, not include 360)
-# def get_abs_angle(yaw):
-#     if yaw >= 0: return yaw
-#     else: return 360 + yaw
-#
-
-def calc_ray_step(pitch, yaw, dist):
-    pt = radians(pitch)
-    yw = radians(yaw)
-
-    if pt < pi/2 and pt > -pi/2:
-        dx = -(dist*cos(pt))*sin(yw)
-        dz = (dist*cos(pt))*cos(yw)
+#############################################################################
+# Utility methods that don't require state variables
+#############################################################################
+# returns: 0 if equal, + if first greater, - if second greater
+def compare_floats(f1, f2):
+    if abs(f1-f2) < 0.000001:
+        return 0
     else:
-        dx = (dist*cos(pt))*sin(yw)
-        dz = -(dist*cos(pt))*cos(yw)
+        return f1-f2
 
-    dy = -dist*sin(pt)
+def distance(x1, y1, x2, y2):
+    return sqrt((x2-x1)**2 + (y2-y1)**2)
 
-    return dx, dy, dz
+# 'run over rise' creates multiplicative factors (fewer divisions later on)
+def get_ray_factors(h, d):
+    if h < 0.5:
+        # lower left corner
+        left = (h - 0.5)/(d - 0.5)
+    else:
+        # upper left corner
+        left = (h - 0.5)/(d+1 - 0.5)
+    if (h+1) < 0.5:
+        right = (h+1 - 0.5)/(d+1 - 0.5)
+    else:
+        right = (h+1 - 0.5)/(d - 0.5)
+    return (left, right)
 
+# since origin (0.5, 0.5) is always part of the line, simply use point-slope
+# form with that point to get the new x vals: minh and maxh
+def is_visible(h, d, left, right):
+    if h < 0.5:
+        #print("h less than 0.5")
+        minh = ((d-0.5)*left + 0.5)
+    else:
+        #print("h greater than 0.5")
+        minh = ((d+1-0.5)*left + 0.5)
+    if (h+1) < 0.5:
+        #print("h+1 less than 0.5")
+        maxh = ((d+1-0.5)*right + 0.5)
+    else:
+        #print("h+1 greater than 0.5")
+        maxh = ((d-0.5)*right + 0.5)
+    #print("minh: {}, maxh: {}".format(minh, maxh))
+    if compare_floats(h,minh) > 0 and compare_floats(h+1,maxh) < 0:
+        return False
+    return True
 
-def get_block_coords(x, y, z, step, num_steps):
-    nx = floor(x + step[0]*num_steps)
-    ny = floor(y + step[1]*num_steps)
-    nz = floor(z + step[2]*num_steps)
-    #print "x: %d, y: %d, z: %d"%(x, y, z)
-    coords = {'x':nx, 'y':ny, 'z':nz}
-    return coords
+#############################################################################
+# Initializes game materials, and whether or not they are solid
+#############################################################################
+class MinecraftMaterials:
+    def __init__(self):
+        self.block_mats = dict()
+        self.init_block_mats()
 
+    def init_block_mats(self):
+        # not comprehensive but includes most common blocks
+        blocks = [i for i in range(43+1)]
+        solids = []
+        for i in range(1,5+1,1):
+            solids.append(i)
+        solids.append(7)
+        for i in range(12,17+1,1):
+            solids.append(i)
+        solids.append(19)
+        for i in range(21,25+1,1):
+            solids.append(i)
+        solids.append(35)
+        for i in range(41,43+1,1):
+            solids.append(i)
+        for blockid in blocks:
+            self.block_mats[blockid] = False
+        for blockid in solids:
+            self.block_mats[blockid] = True
 
-def get_coordinates_in_range(pos):
-    x = pos['x']
-    y = pos['y']
-    z = pos['z']
-    pitch = pos['pitch']
-    yaw = pos['yaw']
-    pit_range = np.arange(pitch - R_PITCH, pitch + R_PITCH + D_PITCH, D_PITCH)
-    yaw_range = np.arange(yaw - R_YAW, yaw + R_YAW + D_YAW, D_YAW)
-    num_steps = np.arange(0, int(MAX_DIST/D_DIST) + D_DIST)
+    def is_solid(self, blockid):
+        if self.block_mats[blockid]:
+            return True
+        return False
 
-    # ROS messages only support 1-D arrays...
-    ray_steps = [calc_ray_step(pt, yw, D_DIST) for pt in pit_range for yw in yaw_range]
-    block_coords = [get_block_coords(x, y, z, step, num) for step in ray_steps for num in num_steps]
-    return block_coords
+#############################################################################
+# Performs ray-casting and neighbor checking for FOV calculations
+#############################################################################
+class FovUtils:
+    def __init__(self, world, max_dist=MAX_DIST):
+        self.max_dist = max_dist
+        self.world = world
+        ray_factors = get_ray_factors(1,4)
+        print("ray factors for 1,4: {}".format(ray_factors))
+        print(is_visible(1,5,*ray_factors))
 
+        self.ray_factors = dict()
+        self.rel_fov = list()
+        self.percept = dict()
+        self.single_blocking = dict()
+        self.pair_blocking = dict()
 
-def get_visible_blocks(blocks):
+        self.init_fov()
+        self.init_single_blocking()
+        self.init_pair_blocking()
+        self.materials = MinecraftMaterials()
 
-    #start = time.time()
-    vis_blocks = {}
+        print("single blocking for (1,4): {}".format(self.single_blocking[(1,4)]))
+        #print("relative fov coords: {}\n".format(self.rel_fov))
+        # print("blocked by a single position:")
+        # for key in self.single_blocking:
+        #     print("this: {} blocks these: {}".format(key,self.single_blocking[key]))
 
-    p_jump = int(floor((2*R_PITCH)/D_PITCH) + 1)
-    y_jump = int(floor((2*R_YAW)/D_YAW) + 1)
-    d_jump = int(floor((MAX_DIST)/D_DIST) + 1)
-    #print("p jump: {}, y jump: {}, d jump: {}".format(p_jump, y_jump, d_jump))
-    #print("length of blocks list: {}".format(len(blocks)))
-    #print("array version of blocks: {}".format(np.array(blocks)))
-    blocks3D = np.reshape(np.array(blocks), newshape=(p_jump, y_jump, d_jump))
+    def init_fov(self):
+        self.rel_fov = [(hi,di) for di in range(self.max_dist) for hi in range(-di,di+1)]
 
-    for y_list in blocks3D:
-        for d_list in y_list:
-            for block in d_list:
-                #xyz = (block['x'], block['y'], block['z'])
-                xyz = block['coords']
-                #print xyz
-                bid = block['id']
+    def init_single_blocking(self):
+        self.ray_factors = {(h1,d1):get_ray_factors(h1,d1) for h1,d1 in self.rel_fov}
+        self.single_blocking = {
+            (h1,d1):{(h2,d2)
+                    for h2,d2 in self.rel_fov
+                    if (d2>d1
+                        and (not is_visible(h2,d2,*self.ray_factors[(h1,d1)]))
+                        and (distance(0.5, 0.5, h1+0.5, d1+0.5) < distance(0.5, 0.5, h2+0.5, d2+0.5)))
+                    }
+            for h1,d1 in self.ray_factors
+        }
 
-                if (bid == 0):
-                    #print("found air, continuing...")
+    def init_pair_blocking(self):
+        for h,d in self.rel_fov:
+            neighbors = self.get_neighbors(h,d)
+            for hn,dn in neighbors:
+                if ((h,d),(hn,dn)) in self.pair_blocking or ((hn,dn),(h,d)) in self.pair_blocking:
                     continue
+                left_factors,right_factors = zip(self.ray_factors[(h,d)], self.ray_factors[(hn,dn)])
+                left_most = min(left_factors)
+                right_most = max(right_factors)
 
-                elif xyz not in vis_blocks:
-                    #print("bid: {}".format(bid))
-                    #print("new block. adding to list")
-                    #vis_blocks[xyz] = block
-                    vis_blocks[xyz] = bid
+                self.pair_blocking[((h,d),(hn,dn))] = set()
+                for hb,db in self.rel_fov:
+                    if (hb,db) == (hn,dn) or (hb,db) == (h,d):
+                        continue
+                    if is_visible(hb, db, left_most, right_most):
+                        continue
+                    if distance(0.5,0.5,hb+0.5,db+0.5) < (distance(0.5,0.5,(h+hn+1)/2.,(d+dn+1)/2.)):
+                        continue
+                    self.pair_blocking[((h,d),(hn,dn))].add((hb,db))
 
-                    if is_solid(bid):
-                        #print("block is solid, breaking out")
-                        break
+    def get_neighbors(self, h, d):
+        neighbors = [
+            # diagonals first, since they block most
+            (h-1,d-1), (h+1,d-1), (h-1,d+1), (h-1,d-1),
+            # perpendiculars
+            (h,d-1), (h,d+1), (h-1,d), (h+1,d)]
+        neighbors = [(hn,dn) for hn,dn in neighbors if self.pos_in_range(hn,dn)]
+        return neighbors
 
-                elif is_solid(vis_blocks[xyz]):
-                    #print("bid: {}".format(bid))
-                    #print("found block: {} already at these coordinates".format(vis_blocks[xyz]['id']))
-                    break
+    def update_pose(self, pose):
+        self.pos = mov.get_nearest_position(pose['x'], pose['y'], pose['z'])
+        self.dir = mov.get_nearest_direction(pose['yaw'])
 
-    #vis_blocks_list = vis_blocks.values()
+    def update_percept(self, pose):
+        # always update the pose first, or camera will be in wrong place
+        self.update_pose(pose)
+        self.cur_blocked = set()
+        self.cur_percept = {coord:None for coord in self.rel_fov}
 
-    #end = time.time()
-    #print "total: %f"%(end-start)
+        for h,d in self.rel_fov:
+            if self.is_blocked(h,d):
+                self.cur_percept[(h,d)] = None
+            else:
+                ax,ay,az = self.rel_to_abs(h,d)
+                bid,meta = self.world.get_block(ax, ay, az)
+                self.cur_percept[(h,d)] = bid
+                if self.materials.is_solid(bid):
+                    self.update_blocked(h, d)
+        return self.cur_percept
 
-    return vis_blocks
+    def pos_in_range(self, h, d):
+        if d >=0 and d < self.max_dist and h >= -d and h <= d:
+            return True
+        return False
+
+    def is_blocked(self, h, d):
+        if (h,d) in self.cur_blocked:
+            #print("coordinate: {} is single blocked".format((h,d)))
+            return True
+        return False
+
+    def update_blocked(self, h, d):
+        cur_blocked = set()
+        neighbors = self.get_neighbors(h,d)
+        for hn,dn in neighbors:
+            if (hn,dn) in cur_blocked or self.is_blocked(hn,dn):
+                continue
+            mat = self.cur_percept[(hn,dn)]
+            if (mat is None) or (not self.materials.is_solid(mat)):
+                continue
+            if ((h,d),(hn,dn)) in self.pair_blocking:
+                cur_blocked |= self.pair_blocking[((h,d),(hn,dn))]
+            else:
+                cur_blocked |= self.pair_blocking[((hn,dn),(h,d))]
+        for hb,db in cur_blocked:
+            self.cur_percept[(hb,db)] = None
+        self.cur_blocked |= cur_blocked
+        self.cur_blocked |= self.single_blocking[(h,d)]
+
+    def rel_to_abs(self, h, d):
+        ax,ay,az = self.pos
+        # SOUTH is +z
+        if self.dir == DIR_SOUTH:
+            return ax-h, ay, az+d
+        # NORTH is -z
+        if self.dir == DIR_NORTH:
+            return ax+h, ay, az-d
+        # EAST is +x
+        if self.dir == DIR_EAST:
+            return ax+d, ay, az+h
+        # WEST is -x
+        if self.dir == DIR_WEST:
+            return ax-d, ay, az-h
+
+    def abs_to_rel(self, x, y, z):
+        ax,ay,az = self.pos
+        # SOUTH is +z
+        if self.dir == DIR_SOUTH:
+            return -(x-ax), z-az
+        # NORTH is -z
+        if self.dir == DIR_NORTH:
+            return x-ax, -(z-az)
+        # EAST is +x
+        if self.dir == DIR_EAST:
+            return z-az, x-ax
+        # WEST is -x
+        if self.dir == DIR_WEST:
+            return -(z-az), -(x-ax)
+
+if __name__ == "__main__":
+    my_fov_utils = FovUtils(max_dist=10)
