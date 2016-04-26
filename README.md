@@ -1,6 +1,6 @@
-#Minecraft Bot
+#Minecraft Agent
 
-A simple perception and action interface for the Minecraft world implemented using ROS. Uses Spockbot, a high-level Python client for the Minecraft server. Originally developed during Google Summer of Code 2015, this code is now being used and developed for use with OpenCog at [opencog-to-minecraft](https://github.com/opencog/opencog-to-minecraft).
+A perception and action interface and HTN planner for solving 'puzzle rooms' in the Minecraft world. Uses Spockbot, a high-level Python client for the Minecraft server, and PyHop, a Python-based HTN planner created by Dana Nau and based on SHOP2. The minecraft-agent project was originally developed as part of Google Summer of Code 2015. That code is now part of a separate project, currently developed by OpenCog at [opencog-to-minecraft](https://github.com/opencog/opencog-to-minecraft).
 
 ##Prerequisites
 
