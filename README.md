@@ -1,8 +1,6 @@
-#Minecraft Bot
+#Minecraft Agent
 
-A simple perception and action interface for the Minecraft world implemented using ROS. Uses Spockbot, a high-level Python client for the Minecraft server. Originally developed during Google Summer of Code 2015, this code is now being used and developed for use with OpenCog at [opencog-to-minecraft](https://github.com/opencog/opencog-to-minecraft).
-
-Credit goes to [Yi-Shan](https://github.com/chenesan) for the original version of the README files, written for the opencog-to-minecraft project.
+A perception and action interface and HTN planner for solving 'puzzle rooms' in the Minecraft world. Uses Spockbot, a high-level Python client for the Minecraft server, and PyHop, a Python-based HTN planner created by Dana Nau and based on SHOP2. The minecraft-agent project was originally developed as part of Google Summer of Code 2015. That code is now part of a separate project, currently developed by OpenCog at [opencog-to-minecraft](https://github.com/opencog/opencog-to-minecraft).
 
 ##Prerequisites
 
@@ -27,37 +25,26 @@ A fixed state used for my projects is on my public GitHub [here](https://github.
 
 ##Contents
 
-`/minecraft_bot` is the entire catkin (ROS) package. Contains everything needed to initialize and run the bot.
+`/utils` contains utility files for movement, perception, and sensation plugins. It also has constants that are used throughout the code base.
 
-`/spock_extras` contains all of the Spock related plugins, including the embedded ROS node that allows everything to be integraded. This should be placed in your SpockBot directory.
-
-`/world` contains data for a couple of Minecraft test worlds. Note worlds were simply edited to remove chunk data in a certain radius around the spawn 'island'. Terrain still exists beyond this radius.
+`/worlds` contains Minecraft test worlds. Note worlds were simply edited to remove chunk data in a certain radius around the spawn 'island'. Terrain still exists beyond this radius.
 
 ##Steps to run
 
 1. add the following to your PYTHONPATH:
 
-    `/path_to_minecraft-bot/`
-
-   and setup the ROS environment:
-
-    `roscore &`
-    `source /your_catkin_workspace/devel/setup.bash`
+    `/path_to_minecraft-agent/`
 
 2. Start the Minecraft Server. This step will differ depending on how you chose to set it up.
 
-3. Follow instructions in [minecraft_bot](https://github.gatech.edu/bsheneman3/minecraft-bot/blob/master/minecraft_bot) to start ROS and initialize Spock. You should see the bot appear in your Minecraft world. If you don't see it right away, a 'spawn' message should still appear in the chat dialogue, along with its coordinates.
+3. Run `test_agent.py`. You should see the bot appear in your Minecraft world. If you don't see it right away, a 'spawn' message should still appear in the chat dialogue, along with its coordinates.
 
-4. You should see the bot move around (test_actions.py) or start printing out lists of blocks that it can see from a fixed position (test_visibility.py).
+4. If the bot is not inside the given room, teleport it by typing the command into the chat dialogue box: `/tp Bot x, y, z`.
+
+5. Place a block of gold in the world. The bot will invoke its planner, and then navigate to the gold.
 
 ##TODO
 
 * Finish documentation.
 
-* Add more percepts: Entities, chat messages, etc.
-
-* Greater perceptual range: The bot's FOV is constrained to about 10 units due to the (in)efficiency of the ray-tracing camera (see visibility.py).
-
-* Use the idmap in minecraft_bot/src/embodiment-testing/ to replace block ids in the perception manager.
-
-* write a script to start everything, or package using ROS. Probably an easy way to do this...
+* Add more percepts: `inventory_contents` and `held_object`.
