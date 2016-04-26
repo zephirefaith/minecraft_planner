@@ -32,10 +32,10 @@ class SelfMovementSensorPlugin(PluginBase):
     requires = ('Event', 'Timers', 'ClientInfo',)
 
     events = {
-        'movement_position_reset':  'handle_position_reset',
-        'movement_path_done':       'handle_path_done',
+        #'movement_position_reset':  'handle_position_reset',
+        #'movement_path_done':       'handle_path_done',
         'client_join_game':         'handle_client_join',
-        'sensor_tick_motion':       'handle_update_sensors',
+        'sensor_tick_motion':       'handle_motion_tick',
     }
 
     def __init__(self, ploader, settings):
@@ -51,14 +51,17 @@ class SelfMovementSensorPlugin(PluginBase):
     # Timers and event handlers
     #########################################################################
 
-    def sensor_timer_tick(self):
-        self.handle_update_sensors()
+    def handle_motion_tick(self, name, data):
+        self.update_sensors()
         data = {
-            'delta_pos': self.motion.delta_pos,
-            'delta_dir': self.motion.delta_dir,
+            'motion': {
+                'delta_pos': self.motion.delta_pos,
+                'delta_dir': self.motion.delta_dir,
+            },
+            'ordering': ['delta_pos', 'delta_dir',]
         }
         # percept: small amount of processing to determine last action
-        self.event.emit('agent_action_percept', data)
+        self.event.emit('agent_motion_percept', data)
 
     def handle_client_join(self, name, data):
         pos = self.clientinfo.position
@@ -68,7 +71,7 @@ class SelfMovementSensorPlugin(PluginBase):
         self.state.dir = facing
         logger.info("Initializing agent's internal state of motion")
 
-    def handle_update_sensors(self, name, data):
+    def update_sensors(self):
         pos = self.clientinfo.position
         # discretize the absolute position and direction
         x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
@@ -84,9 +87,3 @@ class SelfMovementSensorPlugin(PluginBase):
         #print("delta pos: {}, delta dir: {}".format(delta_pos, delta_dir))
         mvu.log_agent_motion(self.motion)
         mvu.log_agent_state(self.state)
-
-    def handle_position_reset(self, name, data):
-        pass
-
-    def handle_path_done(self, name, data):
-        pass

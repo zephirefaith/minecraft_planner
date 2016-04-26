@@ -15,50 +15,58 @@ logger = logging.getLogger('spockbot')
 
 class PerceptionUtils:
     def __init__(self):
-        # a DefaultDict is probably better here
-        self.block_types = {
-            # unknown
-            None:   '0',
-            # air block. no data
-            0:      '1',
-            # gold block. resource
-            41:     '2'
+        self.vectors = {
+            'visual': np.array([]),
+            'motion': np.array([]),
+            'inventory': np.array([]),
         }
-
-        self.visual_vector = []
-        self.motion_vector = []
-        self.inventory_vector = []
-        self.mental_field_vector = []
-        self.mental_action_vector = []
-
-        self.percept_vector = []
+        self.vector_sizes = {
+            'visual':   0,
+            'motion':   0,
+            'inventory':0,
+        }
+        self.vector_ordering = ['visual','motion','inventory',]
+        self.combined_vector = np.array([])
 
     def get_block_type(self, blockid):
-        if blockid in self.block_types:
-            return self.block_types[blockid]
+        if blockid in percept_types_block:
+            return percept_types_block[blockid]
         # the default type for all solid blocks
         return '3'
 
     def linearize_visual_percept(self, percept, percept_ordering):
-        for h,d in percept_ordering:
-            print("current coordinate: {}".format((h,d)))
-        vp_list = self.get_block_type(percept[(h,d)] for h,d in percept_ordering)
-        self.visual_vector = np.array(vp_list)
-        print(self.visual_vector)
+        # for h,d in percept_ordering:
+        #     print("current coordinate: {}".format((h,d)))
+        self.vectors['visual'] = np.array([self.get_block_type(percept[(h,d)])
+            for h,d in percept_ordering])
+        self.vector_sizes['visual'] = len(self.vectors['visual'])
+        logger.debug("visual vector: \n{}".format(self.vectors['visual']))
+
+    def linearize_motion_percept(self, percept, percept_ordering):
+        self.vectors['motion'] = np.array([percept_types_motion[percept[key]]
+            for key in percept_ordering])
+        self.vector_sizes['motion'] = len(self.vectors['motion'])
+        logger.debug("motion vector: {}".format(self.vectors['motion']))
+
+    def linearize_inventory_percept(self, percept, percept_ordering):
+        self.vectors['inventory'] = np.array([percept_types_inventory[percept[item]]
+            for item in percept_ordering])
+        self.vector_sizes['inventory'] = len(self.vectors['inventory'])
+        logger.debug("inventory vector: {}".format(self.vectors['inventory']))
+
+    def update_combined_vectors(self):
+        cur_idx = 0
+        for label in self.vector_ordering:
+            cur_offset = cur_idx + self.vector_sizes[label]
+            cur_vector = self.vectors[label]
+            np.put(a=combined,ind=[cur_idx,cur_offset],v=cur_vector)
+            cur_idx += self.vector_sizes[label]
 
 
-
-    def linearize_motion_percept(self, name, data):
-        logger.debug("received action percept: {}".format(data))
-        self.action_percept = data
-
-    def linearize_inventory_percept(self, name, data):
-        logger.debug("received inventory percept: {}".format(data))
-
-    # TODO: figure out if this is actually necessary
-    # maybe can be compared just inside the planner?
-    def linearize_mental_field_percept(self, name, data):
-        logger.debug("received mental field percept: {}".format(data))
-
-    def linearize_mental_action_percept(self, name, data):
-        logger.debug("received mental action percept: {}".format(data))
+    # # TODO: figure out if this is actually necessary
+    # # maybe can be compared just inside the planner?
+    # def linearize_mental_field_percept(self, name, data):
+    #     logger.debug("received mental field percept: {}".format(data))
+    #
+    # def linearize_mental_action_percept(self, name, data):
+    #     logger.debug("received mental action percept: {}".format(data))

@@ -65,3 +65,35 @@ move_deltas = {
     DIR_SOUTH: (lambda x,y,z: (x,y,z+1)),
     DIR_NORTH: (lambda x,y,z: (x,y,z-1)),
 }
+
+##############################################################################
+# maps for linearizing percepts
+##############################################################################
+# a DefaultDict is probably better here
+percept_types_block = {
+    # unknown
+    None:   '0',
+    # air block. treat as 'nothing'
+    0:      '1',
+    # gold block. resource
+    41:     '2'
+}
+
+percept_types_motion = {
+    'NONE':      '0',
+    'FORWARD':   '1',
+    'LEFT':      '2',
+    'RIGHT':     '3'
+}
+
+percept_types_direction = {
+    'SOUTH': 0,
+    'EAST': 1,
+    'NORTH': 2,
+    'WEST': 3,
+}
+
+percept_types_items = {
+    'AXE':   '0',
+    'PICK':  '1',
+}
