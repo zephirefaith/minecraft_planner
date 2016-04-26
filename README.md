@@ -26,28 +26,25 @@ A fixed state used for my projects is on my public GitHub [here](https://github.
 ##Contents
 
 `/utils` contains utility files for movement, perception, and sensation plugins. It also has constants that are used throughout the code base.
+
 `/worlds` contains Minecraft test worlds. Note worlds were simply edited to remove chunk data in a certain radius around the spawn 'island'. Terrain still exists beyond this radius.
 
 ##Steps to run
 
 1. add the following to your PYTHONPATH:
 
-    `/path_to_minecraft-bot/`
+    `/path_to_minecraft-agent/`
 
 2. Start the Minecraft Server. This step will differ depending on how you chose to set it up.
 
-3. Follow instructions in [minecraft_bot](https://github.gatech.edu/bsheneman3/minecraft-bot/blob/master/minecraft_bot) to use Spock. You should see the bot appear in your Minecraft world. If you don't see it right away, a 'spawn' message should still appear in the chat dialogue, along with its coordinates.
+3. Run `test_agent.py`. You should see the bot appear in your Minecraft world. If you don't see it right away, a 'spawn' message should still appear in the chat dialogue, along with its coordinates.
 
-4. You should see the bot move around (test_actions.py) or start printing out lists of blocks that it can see from a fixed position (test_visibility.py).
+4. If the bot is not inside the given room, teleport it by typing the command into the chat dialogue box: `/tp Bot x, y, z`.
+
+5. Place a block of gold in the world. The bot will invoke its planner, and then navigate to the gold.
 
 ##TODO
 
 * Finish documentation.
 
-* Add more percepts: Entities, chat messages, etc.
-
-* Greater perceptual range: The bot's FOV is constrained to about 10 units due to the (in)efficiency of the ray-tracing camera (see visibility.py).
-
-* Use the idmap in minecraft_bot/src/embodiment-testing/ to replace block ids in the perception manager.
-
-* write a script to start everything, or package using ROS. Probably an easy way to do this...
+* Add more percepts: `inventory_contents` and `held_object`.
