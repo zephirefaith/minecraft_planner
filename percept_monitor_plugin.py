@@ -7,6 +7,7 @@ from spockbot.vector import Vector3
 
 from utils.constants import *
 import utils.movement_utils as mvu
+import utils.perception_utils as pcu
 
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
@@ -50,12 +51,14 @@ class PerceptMonitorPlugin(PluginBase):
         self.percept_vector = None
 
         self.core = PerceptMonitorCore(self)
+        self.p_utils = pcu.PerceptionUtils()
         # for the getter functions in PerceptMonitorCore
         ploader.provides('PerceptMonitor', self.core)
 
     def handle_visual_percept(self, name, data):
         logger.debug("received visual percept: {}".format(data))
         self.visual_percept = data
+        self.p_utils.linearize_visual_percept(self.visual_percept)
 
     def handle_motion_percept(self, name, data):
         logger.debug("received action percept: {}".format(data))

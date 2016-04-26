@@ -52,7 +52,7 @@ def get_ray_factors(h, d):
     return (left, right)
 
 # since origin (0.5, 0.5) is always part of the line, simply use point-slope
-# form with that point to get the new x vals: minh and maxh
+# form with origin to get the new x vals: minh and maxh
 def is_visible(h, d, left, right):
     if h < 0.5:
         minh = ((d-0.5)*left + 0.5)

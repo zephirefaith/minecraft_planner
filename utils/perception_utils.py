@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 
 # from spockbot.mcdata import blocks
 # from spockbot.plugins.base import PluginBase, pl_announce
@@ -6,24 +7,46 @@ import logging
 # from spockbot.vector import Vector3
 
 from utils.constants import *
+from utils.camera_utils import FovUtils
 #import utils.movement_utils as mvu
 
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
 
-class PerceptUtils:
+class PerceptionUtils:
     def __init__(self):
-        #super(PerceptMonitorPlugin, self).__init__(ploader, settings)
-        #
-        # self.visual = None
-        # self.motion = None
-        # self.inventory = None
-        # self.mental_field = None
-        # self.mental_action = None
-        # self.percept_vector = None
+        # a DefaultDict is probably better here
+        self.block_types = {
+            # unknown
+            None:   '0',
+            # air block. no data
+            0:      '1',
+            # gold block. resource
+            41:     '2'
+        }
 
-    def linearize_visual_percept(self, percept):
-        
+        self.visual_vector = []
+        self.motion_vector = []
+        self.inventory_vector = []
+        self.mental_field_vector = []
+        self.mental_action_vector = []
+
+        self.percept_vector = []
+
+    def get_block_type(self, blockid):
+        if blockid in self.block_types:
+            return self.block_types[blockid]
+        # the default type for all solid blocks
+        return '3'
+
+    def linearize_visual_percept(self, percept, percept_ordering):
+        for h,d in percept_ordering:
+            print("current coordinate: {}".format((h,d)))
+        vp_list = self.get_block_type(percept[(h,d)] for h,d in percept_ordering)
+        self.visual_vector = np.array(vp_list)
+        print(self.visual_vector)
+
+
 
     def linearize_motion_percept(self, name, data):
         logger.debug("received action percept: {}".format(data))
