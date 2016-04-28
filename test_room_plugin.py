@@ -74,32 +74,10 @@ class TestRoomPlugin(PluginBase):
         # initialize the 'provides' to make this available to other plugins
         self.testroom_core = TestRoomCore(self.world, self.dims, self)
         ploader.provides('TestRoom',self.testroom_core)
-
         logger.info("test room plugin loaded")
-
-        #frequency = 5  # in seconds
-        #self.timers.reg_event_timer(frequency, self.periodic_event_handler)
-
 
     def handle_block_update(self, name, data):
         logger.info("block update data: {0}".format(data))
-        if data['block_data'] >> 4 == 41:
-            print("client info position: {0}".format(self.clientinfo.position))
-            #cur_x = self.clientinfo.position.x
-            #cur_y = self.clientinfo.position.y
-            #cur_z = self.clientinfo.position.z
-            x = data['location']['x']
-            y = data['location']['y']
-            z = data['location']['z']
-            # logger.info("Found a gold block. attempting to reach it")
-            # if self.is_reachable((-66,14,-39),(x,y,z)):
-            #     print("gold is reachable from current pos")
-            # else:
-            #     print("gold is not reachable")
-        #x = data['location']['x']
-        #y = data['location']['y']
-        #z = data['location']['z']
-        #print("block at adjacent location in world: {0}".format(self.world.get_block(-64,15,-54)))
 
     def in_range(self, x, y, z):
         if (x < self.dims['min_x'] or
@@ -119,14 +97,12 @@ class TestRoomPlugin(PluginBase):
         print("no path found")
         return False
 
-    # note is_obstacle and is_gap ONLY WORK WITH BASIC BLOCKS
-    # e.g. any block that is not air is considered an obstacle/walkable floor
-
-    # checks the block above the given floor location to see if it is passable
+    # note is_obstacle and is_gap ONLY WORK WITH BLOCKS SPECIFIED
+    # checks the block above the given floor location to see if it is an obstacle
     def is_obstacle(self, x, y, z):
         block = self.world.get_block(x, y, z)
-        #print(block)
-        if block[0] != 0 and block[0] != 41:
+        # air, gold, or stone
+        if block[0] != 0 and block[0] != 41 and block[0] != 1:
             return True
         return False
 
@@ -156,9 +132,12 @@ class TestRoomPlugin(PluginBase):
 
         start_pos = (math.floor(pos0[0]),math.floor(pos0[1]),math.floor(pos0[2]))
         end_pos = (math.floor(pos1[0]),math.floor(pos1[1]),math.floor(pos1[2]))
+        goal_pos = self.get_nearest_goal(start_pos, end_pos)
+        if not goal_pos:
+            return None
         search_queue = coll.deque()
 
-        best_dist ={(x,pos0[1],z):float("inf")
+        best_dist ={(x, pos0[1], z):float("inf")
             for x in range(minx,maxx+1)
             for z in range(minz,maxz+1)}
         best_dist[start_pos] = 0
@@ -171,13 +150,12 @@ class TestRoomPlugin(PluginBase):
         visited = {(x,pos0[1],z):False
             for x in range(minx,maxx+1)
             for z in range(minz,maxz+1)}
-        #print(visited)
+
         search_queue.append(start_pos)
-        #counter = 0
         while search_queue:
             cur_block = search_queue.popleft()
             visited[cur_block] = True
-            if cur_block == end_pos:
+            if cur_block == goal_pos:
                 print("\n\nfound end block at cur pos\n\n")
                 break
             neighbors = self.get_neighbors(cur_block)
@@ -194,15 +172,20 @@ class TestRoomPlugin(PluginBase):
                         prev_pos[nb] = cur_block
 
         path = []
-        cur_pos = end_pos
+        cur_pos = goal_pos
         if prev_pos[cur_pos] is not None:
             while cur_pos != start_pos:
                 path.append(cur_pos)
                 cur_pos = prev_pos[cur_pos]
 
-        #print("no path found")
+        print("path found: {}".format(path))
         path.reverse()
         return path
+
+    def distance(self, pos0, pos1):
+        x1,y1,z1 = pos0
+        x2,y2,z2 = pos1
+        return math.sqrt((x2-x1)**2 + (z2-z1)**2)
 
     # returns a list of grid neighbors (diagonal movement not allowed)
     def get_neighbors(self, pos):
@@ -210,3 +193,10 @@ class TestRoomPlugin(PluginBase):
         neighbors = [(x,y,z+1),(x,y,z-1),(x+1,y,z),(x-1,y,z)]
         valid = [n for n in neighbors if self.in_range(*n) and self.is_traversable(n)]
         return valid
+
+    def get_nearest_goal(self, start, end):
+        neighbors = self.get_neighbors(end)
+        distances = [(self.distance(start,n),n) for n in neighbors]
+        if len(distances) > 0:
+            return min(distances)[1]
+        return None

@@ -62,7 +62,7 @@ def log_agent_motion(primitive_action):
     )
 
 def log_agent_state(agent_state):
-    logger.debug(
+    logger.info(
         "current state: <x:{}, y:{}, z:{}, facing:{}>".format(
             agent_state.pos.x,
             agent_state.pos.y,

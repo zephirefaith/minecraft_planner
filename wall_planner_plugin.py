@@ -76,12 +76,13 @@ class WallPlannerPlugin(PluginBase):
                 'location': (-66,14,-46),
                 'reached': 0,
                 'broken': 0,
+                'acquired': 0,
             },
         }
         # variables for wall-in-the-room scenario
         self.state.inventory = { #availability of materials to our agent
             'wood' : 1,
-            'iron' : 0,
+            'iron' : 1,
             'steel' : 1,
         }
         self.state.equipment = None
@@ -99,7 +100,11 @@ class WallPlannerPlugin(PluginBase):
             'move_forward': self.atomicoperators.operator_move,
             'turn_left': self.atomicoperators.operator_look_left,
             'turn_right': self.atomicoperators.operator_look_right,
-            'break_block': self.atomicoperators.operator_break_obstacle,}
+            'break_block': self.atomicoperators.operator_break_obstacle,
+            'equip_agent': self.equip_agent_dummy_operator,}
+
+    def equip_agent_dummy_operator(self):
+        pass
 
     def register_execution_timer(self, name, data):
         self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execution_tick)
@@ -163,8 +168,8 @@ class WallPlannerPlugin(PluginBase):
             state.current_position = (x,y,z+1)
         if (state.current_orientation == DIR_WEST):
             state.current_position = (x-1,y,z)
-        if (state.current_position.y - state.wall_location.y) <= 1:
-            state.wall_reached = 1
+        # if (state.current_position.y - state.wall_location.y) <= 1:
+        #     state.wall_reached = 1
         return state
 
     def turn_left(self, state):
@@ -175,30 +180,24 @@ class WallPlannerPlugin(PluginBase):
         state.current_orientation = look_right_deltas[state.current_orientation]
         return state
 
-    def break_block(self, state):
-        if state.wall_reached == 1 and state.wall_state == 1:
-            if state.equipment == 'iron' or state.equipment == 'steel':
-                state.wall_state = 0
-                return state
-        if state.wall_state == 0 and state.gold == 1:
-            state.gold = 0
-            return state
-        return False
+    def break_block(self, state, target):
+        # if state.targets[target]['reached'] == 1 and state.targets[target]['broken'] == 0:
+            # if state.equipment == 'iron' or state.equipment == 'steel':
+        state.targets[target]['broken'] = 1
+        return state
+        #return False
 
-    def equip_agent(self, state, materials):
-        # check if the materials required are available in inventory to be
-        # equipped or not
-        material = None
-        for sample in materials:
-            if state.inventory[sample] == 1:
-                material = sample
-                break
-
-        if material is None:
+    def equip_agent(self, state, tool):
+        # material = None
+        # for sample in materials:
+        #     if state.inventory[sample] == 1:
+        #         material = sample
+        #         break
+        if tool is None:
             return False
         else:
-            state.equipment = sample
-            state.equipped = 1
+            state.equipment = tool
+            #state.equipped = 1
             return state
 
     #########################################################################
@@ -207,13 +206,11 @@ class WallPlannerPlugin(PluginBase):
     # main task method. currently only way to get the resource
     def get_resource(self, state):
         print("calling get_resource")
-
-        return [('find_route', 'wall'), ('navigate','wall'),('break_wall',), ('find_route', 'gold'), ('navigate','gold'), ('acquire',)]
+        return [('find_route', 'wall'), ('navigate','wall'),('break_wall',), ('find_route', 'gold'), ('navigate','gold'), ('acquire','gold')]
 
     def find_route(self, state, target):
         print("calling find_route with target: {}".format(target))
         state.path_found = 0
-        #state.subgoal = target
         state.path = self.testroom.compute_path(state.current_position, state.targets[target]['location'])
         print("current path: {}".format(state.path))
         if not state.path:
@@ -226,7 +223,7 @@ class WallPlannerPlugin(PluginBase):
 
     def navigate(self, state, target):
         print("calling navigate with target: {}".format(target))
-        if state.path_idx == (len(state.path) - 1):
+        if state.path_idx == len(state.path):
             state.targets[target]['reached'] = 1
             return []
         if state.path_found == 1 and state.targets[target]['reached'] == 0:
@@ -235,117 +232,121 @@ class WallPlannerPlugin(PluginBase):
             if next_x > cur_x:
                 if state.current_orientation == DIR_EAST:
                     state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate',)]
+                    return [('move_forward',), ('navigate', target)]
                 elif state.current_orientation == DIR_WEST:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_NORTH:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_left',), ('navigate',)]
+                    return [('turn_left',), ('navigate', target)]
             elif next_x < cur_x:
                 if state.current_orientation == DIR_WEST:
                     state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate',)]
+                    return [('move_forward',), ('navigate', target)]
                 elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_EAST:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_NORTH:
-                    return [('turn_left',), ('navigate',)]
+                    return [('turn_left',), ('navigate', target)]
             elif next_z > cur_z:
                 if state.current_orientation == DIR_SOUTH:
                     state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate',)]
+                    return [('move_forward',), ('navigate', target)]
                 elif state.current_orientation == DIR_EAST:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_NORTH:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_WEST:
-                    return [('turn_left',), ('navigate',)]
+                    return [('turn_left',), ('navigate', target)]
             elif next_z < cur_z:
                 if state.current_orientation == DIR_NORTH:
                     state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate',)]
+                    return [('move_forward',), ('navigate', target)]
                 elif state.current_orientation == DIR_WEST:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_right',), ('navigate',)]
+                    return [('turn_right',), ('navigate', target)]
                 elif state.current_orientation == DIR_EAST:
-                    return [('turn_left',), ('navigate',)]
+                    return [('turn_left',), ('navigate', target)]
             return []
         else:
             return False
 
-    def acquire_resource(self, state):
+    def acquire_resource(self, state, target):
         #state = copy.deepcopy(state)
         print("calling acquire with state: {}".format(state.__name__))
-        if state.targets['gold']['acquired'] == 1:
+        if state.targets[target]['acquired'] == 1:
             return []
-        if (state.targets['gold']['reached'] == 1 and
-            state.targets['gold']['broken'] == 0):
+        if (state.targets[target]['reached'] == 1 and
+            state.targets[target]['broken'] == 0):
             #gold block not yet broken
             #face the block, if already facing then break the block
             cur_x,cur_y,cur_z = state.current_position
-            next_x,next_y,next_z = state.path[state.path_idx]
+            next_x,next_y,next_z = state.targets[target]['location']
             if next_z < cur_z:
                 if state.current_orientation == DIR_NORTH:
-                    state.targets['gold']['broken'] = 1
-                    return [('break_block',), ('acquire',)]
+                    state.targets[target]['broken'] = 1
+                    return [('break_block',target), ('acquire',target)]
                 elif state.current_orientation == DIR_WEST:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_EAST:
-                    return [('turn_left',), ('acquire',)]
+                    return [('turn_left',), ('acquire',target)]
             if next_z > cur_z:
                 if state.current_orientation == DIR_SOUTH:
-                    state.targets['gold']['broken'] = 1
-                    return [('break_block',), ('acquire',)]
+                    state.targets[target]['broken'] = 1
+                    return [('break_block',target), ('acquire',target)]
                 elif state.current_orientation == DIR_EAST:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_NORTH:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_WEST:
-                    return [('turn_left',), ('acquire',)]
+                    return [('turn_left',), ('acquire',target)]
             if next_x < cur_x:
                 if state.current_orientation == DIR_WEST:
-                    state.targets['gold']['broken'] = 1
-                    return [('break_block',), ('acquire',)]
+                    state.targets[target]['broken'] = 1
+                    return [('break_block',target), ('acquire',target)]
                 elif state.current_orientation == DIR_EAST:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_NORTH:
-                    return [('turn_left',), ('acquire',)]
+                    return [('turn_left',), ('acquire',target)]
             if next_x > cur_x:
                 if state.current_orientation == DIR_EAST:
-                    state.targets['gold']['broken'] = 1
-                    return [('break_block',), ('acquire',)]
+                    state.targets[target]['broken'] = 1
+                    return [('break_block',target), ('acquire',target)]
                 elif state.current_orientation == DIR_WEST:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_NORTH:
-                    return [('turn_right',), ('acquire',)]
+                    return [('turn_right',), ('acquire',target)]
                 elif state.current_orientation == DIR_SOUTH:
-                    return [('turn_left',), ('acquire',)]
+                    return [('turn_left',), ('acquire',target)]
             return []
         else:
             # gold block is broken, but not yet acquired
-            state.targets['gold']['acquired'] = 1
-            return [('move_forward',), ('acquire',)]
+            state.targets[target]['acquired'] = 1
+            return [('move_forward',), ('acquire', target)]
 
     def break_wall(self, state):
         tool = self.preconditions['break_wall']['inventory']
 
         # check preconditions:
         if state.inventory[tool] == 0:
+            print("could not find tool: {}".format(tool))
             return False
         # if wall hasn't been reached at this point, method fails
         if state.targets['wall']['reached'] == 0:
+            print("wall has not been reached yet")
             return False
 
         # actual method execution
         if state.equipment is None:
+            print("adding method equip_agent")
             return [('equip_agent', tool),('break_wall',)]
         elif state.targets['wall']['broken'] == 0:
-            return [('break_block',)]
+            print("adding method break_block on wall")
+            return [('acquire','wall')]
         return False
