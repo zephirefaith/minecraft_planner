@@ -85,19 +85,19 @@ class WallPlannerPlugin(PluginBase):
             'find_route' : {
                 'precondition'  : None,
                 'inventory'     : None
-            }
+            },
             'navigate' : {
                 'precondition'  : None,
                 'inventory'     : None
-            }
+            },
             'acquire' : {
                 'precondition'  : ['state.gold_reached',1],
                 'inventory'     : None
-            }
+            },
             'break_wall' : {
                 'precondition'  : ['state.wall_reached',1],
                 'inventory'     : 'iron'
-            }
+            },
         }
 
     def init_operators(self):

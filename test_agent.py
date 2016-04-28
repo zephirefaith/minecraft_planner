@@ -19,7 +19,7 @@ from percept_monitor_plugin import PerceptMonitorPlugin
 
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
-from test_planner_plugin import TestPlannerPlugin
+from wall_planner_plugin import WallPlannerPlugin
 
 # spock utilities and plugins
 from spockbot import Client
@@ -58,7 +58,7 @@ plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 #plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 
-plugins.append(('TestPlanner', TestPlannerPlugin))
+plugins.append(('WallPlanner', WallPlannerPlugin))
 
 #plugins.append(('echo', EchoPacketPlugin))
 #plugins.append(('TestAgent', TestAgentPlugin))
