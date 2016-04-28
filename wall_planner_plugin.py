@@ -64,34 +64,31 @@ class WallPlannerPlugin(PluginBase):
         self.state.path = []
         self.state.path_found = 0
         self.state.path_idx = -1
+        self.state.equipment = None
+        self.state.inventory = {
+            'wood' : 1,
+            'iron' : 0,
+            'steel' : 1,}
         self.state.targets = {
             'gold': {
                 'location': (0,0,0),
                 'reached': 0,
                 'broken': 0,
-                'acquired': 0,
-            },
+                'acquired': 0,},
             'wall': {
                 'location': (-66,14,-46),
                 'reached': 0,
                 'broken': 0,
-                'acquired': 0,
-            },
-        }
-        # variables for wall-in-the-room scenario
-        self.state.inventory = { #availability of materials to our agent
-            'wood' : 1,
-            'iron' : 1,
-            'steel' : 1,
-        }
-        self.state.equipment = None
+                'acquired': 0,},}
 
+        self.failed_method = None
         self.preconditions = {
             'break_wall' : {
                 'precondition'  : None,
-                'inventory'     : 'iron',
+                'inventory'     : ['iron'],
             },
         }
+
 
     def init_operators(self):
         self.op_translations = {
@@ -149,6 +146,8 @@ class WallPlannerPlugin(PluginBase):
                             hop.get_operators(),
                             hop.get_methods(),
                             verbose=3)
+        print("result of hop.plan(): {}".format(self.room_plan))
+        print("current failed method label: {}".format(self.failed_method))
         end = time.time()
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
 
@@ -260,7 +259,6 @@ class WallPlannerPlugin(PluginBase):
             return False
 
     def acquire_resource(self, state, target):
-        #state = copy.deepcopy(state)
         print("calling acquire with target: {}".format(target))
         if state.targets[target]['acquired'] == 1:
             return []
@@ -317,10 +315,10 @@ class WallPlannerPlugin(PluginBase):
             return [('move_forward',), ('acquire', target)]
 
     def break_wall(self, state):
-        tool = self.preconditions['break_wall']['inventory']
+        tools = self.preconditions['break_wall']['inventory']
         # check preconditions:
-        if state.inventory[tool] == 0:
-            #print("could not find tool: {}".format(tool))
+        if all([state.inventory[tool] == 0 for tool in tools]):
+            self.failed_method = 'break_wall'
             return False
         # if wall hasn't been reached at this point, method fails
         if state.targets['wall']['reached'] == 0:
