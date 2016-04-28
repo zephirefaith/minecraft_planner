@@ -88,6 +88,9 @@ class WallPlannerPlugin(PluginBase):
                 'inventory'     : ['iron'],
             },
         }
+        self.methods = {
+            'break_wall' : self.break_wall
+        }
 
 
     def init_operators(self):
@@ -148,6 +151,11 @@ class WallPlannerPlugin(PluginBase):
                             verbose=3)
         print("result of hop.plan(): {}".format(self.room_plan))
         print("current failed method label: {}".format(self.failed_method))
+        if self.failed_method:
+            self.learning_state = copy.deepcopy(self.state)
+            #####
+            # call learning code here. maybe in a loop
+            #####
         end = time.time()
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
 
@@ -175,6 +183,7 @@ class WallPlannerPlugin(PluginBase):
         return state
 
     def break_block(self, state, target):
+        if state.
         state.targets[target]['broken'] = 1
         return state
 
@@ -191,7 +200,7 @@ class WallPlannerPlugin(PluginBase):
     # main task method. currently only way to get the resource
     def get_resource(self, state):
         print("calling get_resource")
-        return [('find_route', 'wall'), ('navigate','wall'),('break_wall',), ('find_route', 'gold'), ('navigate','gold'), ('acquire','gold')]
+        return [('find_route', 'wall'), ('navigate','wall'),('break_wall', self.preconditions), ('find_route', 'gold'), ('navigate','gold'), ('acquire','gold')]
 
     def find_route(self, state, target):
         print("calling find_route with target: {}".format(target))
@@ -314,8 +323,8 @@ class WallPlannerPlugin(PluginBase):
             state.targets[target]['acquired'] = 1
             return [('move_forward',), ('acquire', target)]
 
-    def break_wall(self, state):
-        tools = self.preconditions['break_wall']['inventory']
+    def break_wall(self, state, preconditions):
+        tools = preconditions['break_wall']['inventory']
         # check preconditions:
         if all([state.inventory[tool] == 0 for tool in tools]):
             self.failed_method = 'break_wall'
