@@ -18,9 +18,7 @@ from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
 __author__ = 'Bradley Sheneman'
-
 logger = logging.getLogger('spockbot')
-
 
 # room coordinates (found in test_room_island)
 MIN_X = -70
@@ -33,34 +31,27 @@ MAX_Z = -38
 
 START_COORDS = (-66,14,-39)
 
-# have to create a dummy class like this
-# in order to use your custom plugin in other plugins as a 'requires'
+# create a dummy class to only expose certain methods
 class TestRoomCore(object):
     def __init__(self, world, dims, testroom_instance):
         self.testroom_instance = testroom_instance
-        #self.world = world
-        #self.dims = dims
-        pass
+
     def compute_path(self, pos0, pos1, max_depth=10):
         return self.testroom_instance.compute_path(pos0, pos1, max_depth)
-
 
 
 @pl_announce('TestRoom')
 class TestRoomPlugin(PluginBase):
 
     requires = ('Timers', 'World', 'ClientInfo', 'Event')
-    #provides = 'TestRoom'
+
     events = {
         'world_block_update':   'handle_block_update',
     }
 
-    # eventually __init__ will create the room
-    # at a specified location
+    # eventually __init__ will create the room at a specified location
     def __init__(self, ploader, settings):
         super(TestRoomPlugin, self).__init__(ploader, settings)
-
-        # starting location of agent
         self.dims = {
             'min_x': MIN_X,
             'min_y': MIN_Y,
@@ -70,7 +61,6 @@ class TestRoomPlugin(PluginBase):
             'max_z': MAX_Z,
         }
         self.start_location = Vector3(*START_COORDS)
-
         # initialize the 'provides' to make this available to other plugins
         self.testroom_core = TestRoomCore(self.world, self.dims, self)
         ploader.provides('TestRoom',self.testroom_core)
@@ -92,9 +82,9 @@ class TestRoomPlugin(PluginBase):
     def is_reachable(self, pos0, pos1):
         path = self.compute_path(pos0, pos1, max_depth=10)
         if path:
-            print("path found: {0}".format(path))
+            #print("path found: {0}".format(path))
             return True
-        print("no path found")
+        #print("no path found")
         return False
 
     # note is_obstacle and is_gap ONLY WORK WITH BLOCKS SPECIFIED
@@ -156,12 +146,9 @@ class TestRoomPlugin(PluginBase):
             cur_block = search_queue.popleft()
             visited[cur_block] = True
             if cur_block == goal_pos:
-                print("\n\nfound end block at cur pos\n\n")
+                print("\nfound end block at cur pos\n")
                 break
             neighbors = self.get_neighbors(cur_block)
-            #counter += 1
-            #print("current block: {0}".format(cur_block))
-            #print("neighbors: {0}".format(neighbors))
             for nb in neighbors:
                 #print("looking at neighbor {0}".format(nb))
                 if (not visited[nb] and nb not in search_queue):
@@ -170,15 +157,13 @@ class TestRoomPlugin(PluginBase):
                         #print("found better distance of {0}".format(best_dist[cur_block]+1))
                         best_dist[nb] = best_dist[cur_block] + 1
                         prev_pos[nb] = cur_block
-
         path = []
         cur_pos = goal_pos
         if prev_pos[cur_pos] is not None:
             while cur_pos != start_pos:
                 path.append(cur_pos)
                 cur_pos = prev_pos[cur_pos]
-
-        print("path found: {}".format(path))
+        #print("path found: {}".format(path))
         path.reverse()
         return path
 

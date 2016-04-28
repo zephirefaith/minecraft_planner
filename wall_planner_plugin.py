@@ -61,7 +61,6 @@ class WallPlannerPlugin(PluginBase):
     def init_state(self):
         # set state variables to be used by operators and methods
         self.state = hop.State('start_state')
-
         self.state.path = []
         self.state.path_found = 0
         self.state.path_idx = -1
@@ -86,7 +85,6 @@ class WallPlannerPlugin(PluginBase):
             'steel' : 1,
         }
         self.state.equipment = None
-        #self.state.equipped = 0     # 0: no equipment in hand, 1: equipped with tool
 
         self.preconditions = {
             'break_wall' : {
@@ -157,7 +155,6 @@ class WallPlannerPlugin(PluginBase):
     #########################################################################
     # operators
     #########################################################################
-
     def move_forward(self, state):
         x,y,z = state.current_position
         if (state.current_orientation == DIR_NORTH):
@@ -168,8 +165,6 @@ class WallPlannerPlugin(PluginBase):
             state.current_position = (x,y,z+1)
         if (state.current_orientation == DIR_WEST):
             state.current_position = (x-1,y,z)
-        # if (state.current_position.y - state.wall_location.y) <= 1:
-        #     state.wall_reached = 1
         return state
 
     def turn_left(self, state):
@@ -181,23 +176,14 @@ class WallPlannerPlugin(PluginBase):
         return state
 
     def break_block(self, state, target):
-        # if state.targets[target]['reached'] == 1 and state.targets[target]['broken'] == 0:
-            # if state.equipment == 'iron' or state.equipment == 'steel':
         state.targets[target]['broken'] = 1
         return state
-        #return False
 
     def equip_agent(self, state, tool):
-        # material = None
-        # for sample in materials:
-        #     if state.inventory[sample] == 1:
-        #         material = sample
-        #         break
         if tool is None:
             return False
         else:
             state.equipment = tool
-            #state.equipped = 1
             return state
 
     #########################################################################
@@ -212,7 +198,7 @@ class WallPlannerPlugin(PluginBase):
         print("calling find_route with target: {}".format(target))
         state.path_found = 0
         state.path = self.testroom.compute_path(state.current_position, state.targets[target]['location'])
-        print("current path: {}".format(state.path))
+        #print("current path: {}".format(state.path))
         if not state.path:
             return False
         else:
@@ -275,7 +261,7 @@ class WallPlannerPlugin(PluginBase):
 
     def acquire_resource(self, state, target):
         #state = copy.deepcopy(state)
-        print("calling acquire with state: {}".format(state.__name__))
+        print("calling acquire with target: {}".format(target))
         if state.targets[target]['acquired'] == 1:
             return []
         if (state.targets[target]['reached'] == 1 and
@@ -332,21 +318,20 @@ class WallPlannerPlugin(PluginBase):
 
     def break_wall(self, state):
         tool = self.preconditions['break_wall']['inventory']
-
         # check preconditions:
         if state.inventory[tool] == 0:
-            print("could not find tool: {}".format(tool))
+            #print("could not find tool: {}".format(tool))
             return False
         # if wall hasn't been reached at this point, method fails
         if state.targets['wall']['reached'] == 0:
-            print("wall has not been reached yet")
+            #print("wall has not been reached yet")
             return False
 
         # actual method execution
         if state.equipment is None:
-            print("adding method equip_agent")
+            #print("adding method equip_agent")
             return [('equip_agent', tool),('break_wall',)]
         elif state.targets['wall']['broken'] == 0:
-            print("adding method break_block on wall")
+            #print("adding method break_block on wall")
             return [('acquire','wall')]
         return False
