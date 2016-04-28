@@ -19,7 +19,9 @@ from percept_monitor_plugin import PerceptMonitorPlugin
 
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
+
 from wall_planner_plugin import WallPlannerPlugin
+#from test_planner_plugin import TestPlannerPlugin
 
 # spock utilities and plugins
 from spockbot import Client
