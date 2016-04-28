@@ -19,8 +19,8 @@ logger = logging.getLogger('spockbot')
 
 ACTION_TICK_FREQUENCY = 1.0
 
-@pl_announce('TestPlanner')
-class TestPlannerPlugin(PluginBase):
+@pl_announce('WallPlanner')
+class WallPlannerPlugin(PluginBase):
 
     requires = ('Event', 'Timers', 'ClientInfo', 'AtomicOperators', 'Interact',
                 'World', 'TestRoom', 'PerceptMonitor')
@@ -33,10 +33,10 @@ class TestPlannerPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(TestPlannerPlugin, self).__init__(ploader, settings)
+        super(WallPlannerPlugin, self).__init__(ploader, settings)
         self.init_planner()
         self.init_operators()
-        ploader.provides('TestPlanner', self)
+        ploader.provides('WallPlanner', self)
 
     def init_planner(self):
         logger.info("adding atomic operators to pyhop")
@@ -46,7 +46,8 @@ class TestPlannerPlugin(PluginBase):
             self.move_forward,
             self.turn_left,
             self.turn_right,
-            self.break_block)
+            self.break_block,
+            self.equip_agent)
         hop.print_operators(hop.get_operators())
         # for the main task
         hop.declare_methods('get_resource', self.get_resource)
@@ -54,11 +55,13 @@ class TestPlannerPlugin(PluginBase):
         hop.declare_methods('find_route', self.find_route_to_resource)
         hop.declare_methods('navigate', self.navigate_to_resource)
         hop.declare_methods('acquire', self.acquire_resource)
+        hop.declare_methods('break_wall', self.break_wall)
         hop.print_methods(hop.get_methods())
 
     def init_state(self):
         # set state variables to be used by operators and methods
         self.state = hop.State('start_state')
+        # variables from 1st HTN
         self.state.gold = 1 # 1: unbroken, 0: broken
         self.state.path = []
         self.state.gold_reached = 0
@@ -66,6 +69,36 @@ class TestPlannerPlugin(PluginBase):
         self.state.path_idx = -1
         self.state.gold_broken = 0
         self.state.gold_acquired = 0
+        # variables for wall-in-the-room scenario
+        self.state.inventory = {'wood' : 1, 'iron' : 0, 'steel' : 1}        #availability of materials to our agent
+        self.state.equipment = None
+        self.state.equipped = 0         # 0: no equipment in hand, 1: equipped with tool
+        self.state.wall_state = 1       # 1: unbroken wall, 0: broken wall
+        self.state.wall_location.x = [-65, -67]
+        self.state.wall_location.y = 15
+        self.state.wall_reached = 0     # 0: not next to wall, 1: next to wall
+        self.methods = {
+            'get_resource' : {
+                'precondition'  : None,
+                'inventory'     : None
+            },
+            'find_route' : {
+                'precondition'  : None,
+                'inventory'     : None
+            }
+            'navigate' : {
+                'precondition'  : None,
+                'inventory'     : None
+            }
+            'acquire' : {
+                'precondition'  : ['state.gold_reached',1],
+                'inventory'     : None
+            }
+            'break_wall' : {
+                'precondition'  : ['state.wall_reached',1],
+                'inventory'     : 'iron'
+            }
+        }
 
     def init_operators(self):
         self.op_translations = {
@@ -125,7 +158,6 @@ class TestPlannerPlugin(PluginBase):
     #########################################################################
 
     def move_forward(self, state):
-        #state = copy.deepcopy(state)
         x,y,z = state.current_position
         if (state.current_orientation == DIR_NORTH):
             state.current_position = (x,y,z-1)
@@ -135,24 +167,43 @@ class TestPlannerPlugin(PluginBase):
             state.current_position = (x,y,z+1)
         if (state.current_orientation == DIR_WEST):
             state.current_position = (x-1,y,z)
+        if (state.current_position.y - state.wall_location.y) <= 1:
+            state.wall_reached = 1
         return state
 
     def turn_left(self, state):
-        state = copy.deepcopy(state)
         state.current_orientation = look_left_deltas[state.current_orientation]
         return state
 
     def turn_right(self, state):
-        state = copy.deepcopy(state)
         state.current_orientation = look_right_deltas[state.current_orientation]
         return state
 
     def break_block(self, state):
-        state = copy.deepcopy(state)
-        if(state.gold == 1):
+        if state.wall_reached == 1 and state.wall_state == 1:
+            if state.equipment == 'iron' or state.equipment == 'steel':
+                state.wall_state = 0
+                return state
+        if state.wall_state == 0 and state.gold == 1:
             state.gold = 0
             return state
         return False
+
+    def equip_agent(self, state, materials):
+        # check if the materials required are available in inventory to be
+        # equipped or not
+        material = None
+        for sample in materials:
+            if state.inventory[sample] == 1:
+                material = sample
+                break
+
+        if material is None:
+            return False
+        else:
+            state.equipment = sample
+            state.equipped = 1
+            return state
 
     #########################################################################
     # methods
@@ -179,6 +230,8 @@ class TestPlannerPlugin(PluginBase):
         if state.path_idx == (len(state.path) - 1):
             state.gold_reached = 1
             return []
+        if  state.wall_reached == 1 and state.wall_state == 1:
+            return [('break_wall',)]
         if state.path_found == 1 and state.gold_reached == 0:
             cur_x,cur_y,cur_z = state.current_position
             next_x,next_y,next_z = state.path[state.path_idx]
@@ -281,3 +334,14 @@ class TestPlannerPlugin(PluginBase):
             # gold block is broken, but not yet acquired
             state.gold_acquired = 1
             return [('move_forward',), ('acquire',)]
+
+    def break_wall(self, state):
+        tool = self.methods['break_wall']['inventory']
+        if state.equipment is None and state.wall_state == 1:
+            return [('equip_agent', tool),('break_wall',)]
+        else:
+            return False
+        if state.equipped == 1 and state.wall_state == 1:
+            return [('break_block',), ('navigate',)]
+        else:
+            return False
