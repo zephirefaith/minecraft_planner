@@ -141,7 +141,7 @@ class TestRoomPlugin(PluginBase):
     def is_traversable(self, pos):
         x,y,z = pos
         if self.is_obstacle(x, y, z) or self.is_gap(x, y, z):
-            #print("block is not traversable")
+            print("block: {} is not traversable".format(pos))
             return False
         return True
 
@@ -186,10 +186,7 @@ class TestRoomPlugin(PluginBase):
             #print("neighbors: {0}".format(neighbors))
             for nb in neighbors:
                 #print("looking at neighbor {0}".format(nb))
-                if (not visited[nb] and
-                    self.is_traversable(nb) and
-                    nb not in search_queue):
-
+                if (not visited[nb] and nb not in search_queue):
                     search_queue.append(nb)
                     if best_dist[cur_block] + 1 < best_dist[nb]:
                         #print("found better distance of {0}".format(best_dist[cur_block]+1))
@@ -211,5 +208,5 @@ class TestRoomPlugin(PluginBase):
     def get_neighbors(self, pos):
         x,y,z = pos
         neighbors = [(x,y,z+1),(x,y,z-1),(x+1,y,z),(x-1,y,z)]
-        valid = [n for n in neighbors if self.in_range(*n)]
+        valid = [n for n in neighbors if self.in_range(*n) and self.is_traversable(n)]
         return valid

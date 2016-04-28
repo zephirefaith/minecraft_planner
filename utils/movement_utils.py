@@ -55,7 +55,7 @@ def get_nearest_position(x, y, z):
 #########################################################################
 
 def log_agent_motion(primitive_action):
-    logger.info(
+    logger.debug(
         "current motion percept: <moving: {}, turning: {}>".format(
             primitive_action.delta_pos,
             primitive_action.delta_dir,)
