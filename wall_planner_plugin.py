@@ -155,13 +155,17 @@ class WallPlannerPlugin(PluginBase):
         print("current failed method label: {}".format(self.failed_method))
         if self.failed_method:
             self.learning_state = copy.deepcopy(self.state)
+            self.learning_state.targets['wall']['reached'] = 1
             result = self.improvise(self.learning_state, self.failed_method, self.error_type)
             if result == True:
+                print("Learnt a new object just fine!")
                 self.room_plan = hop.plan(self.state,
                                     [('get_resource',)],
                                     hop.get_operators(),
                                     hop.get_methods(),
                                     verbose=3)
+            else:
+                print("Could not learn anything :(")
 
     def improvise(self, sim_state, method_name, error_type):
         # see what kind of error it is, if it's a precondition error, learn a
@@ -172,7 +176,7 @@ class WallPlannerPlugin(PluginBase):
             #call the same function but with current available inventory
             for tool in self.state.inventory:
                 if self.state.inventory[tool] == 1:
-                    result = self.methods[method_name](sim_state, tool)
+                    result = self.methods[method_name](sim_state, [tool])
                     if result is True:
                         self.preconditions['break_wall']['inventory'].append(tool)
                         return True
@@ -239,6 +243,7 @@ class WallPlannerPlugin(PluginBase):
     def navigate(self, state, target):
         print("calling navigate with target: {}".format(target))
         if state.path_idx == len(state.path):
+            print("setting "+target+" to reached")
             state.targets[target]['reached'] = 1
             return []
         if state.path_found == 1 and state.targets[target]['reached'] == 0:
@@ -349,6 +354,7 @@ class WallPlannerPlugin(PluginBase):
         # check preconditions:
         tool = None
         for sample_tool in tools:
+            print("checking if %s is available", sample_tool)
             if self.state.inventory[sample_tool] == 1:
                 tool = sample_tool
             else:
@@ -357,15 +363,15 @@ class WallPlannerPlugin(PluginBase):
                 return False
         # if wall hasn't been reached at this point, method fails
         if state.targets['wall']['reached'] == 0:
-            #print("wall has not been reached yet")
+            print("wall has not been reached yet")
             self.failed_method = 'break_wall'
             self.error_type = 'preconditions'
             return False
         # actual method execution
         if state.equipment is None:
-            #print("adding method equip_agent")
+            print("adding method equip_agent")
             return [('equip_agent', tool),('break_wall',)]
         elif state.targets['wall']['broken'] == 0:
-            #print("adding method break_block on wall")
+            print("adding method break_block on wall")
             return [('acquire','wall')]
         return False
