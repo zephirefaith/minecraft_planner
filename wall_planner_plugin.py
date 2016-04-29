@@ -176,8 +176,14 @@ class WallPlannerPlugin(PluginBase):
             #call the same function but with current available inventory
             for tool in self.state.inventory:
                 if self.state.inventory[tool] == 1:
-                    result = self.methods[method_name](sim_state, [tool])
-                    if result is True:
+                    tool_list = []
+                    tool_list.append(tool)
+                    result = hop.plan(sim_state,
+                                [(method_name, tool_list)],
+                                hop.get_operators(),
+                                hop.get_methods(),
+                                verbose=3) #[method_name](sim_state, [tool])
+                    if result is not None:
                         self.preconditions['break_wall']['inventory'].append(tool)
                         return True
             return False
@@ -208,9 +214,11 @@ class WallPlannerPlugin(PluginBase):
         return state
 
     def break_block(self, state, target):
-        #if state.
-        state.targets[target]['broken'] = 1
-        return state
+        if state.equipment == 'steel' or state.equipment == 'iron':
+            state.targets[target]['broken'] = 1
+            return state
+        else:
+            return False
 
     def equip_agent(self, state, tool):
         if tool is None:
@@ -357,10 +365,11 @@ class WallPlannerPlugin(PluginBase):
             print("checking if %s is available", sample_tool)
             if self.state.inventory[sample_tool] == 1:
                 tool = sample_tool
-            else:
-                self.failed_method = 'break_wall'
-                self.error_type = 'inventory'
-                return False
+
+        if tool is None:
+            self.failed_method = 'break_wall'
+            self.error_type = 'inventory'
+            return False
         # if wall hasn't been reached at this point, method fails
         if state.targets['wall']['reached'] == 0:
             print("wall has not been reached yet")
@@ -370,7 +379,7 @@ class WallPlannerPlugin(PluginBase):
         # actual method execution
         if state.equipment is None:
             print("adding method equip_agent")
-            return [('equip_agent', tool),('break_wall',)]
+            return [('equip_agent', tool),('break_wall', tools)]
         elif state.targets['wall']['broken'] == 0:
             print("adding method break_block on wall")
             return [('acquire','wall')]
