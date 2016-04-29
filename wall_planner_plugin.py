@@ -149,15 +149,36 @@ class WallPlannerPlugin(PluginBase):
                             hop.get_operators(),
                             hop.get_methods(),
                             verbose=3)
+        end = time.time()
+        print("******* total time for planning: {} ms*******".format(1000*(end-start)))
         print("result of hop.plan(): {}".format(self.room_plan))
         print("current failed method label: {}".format(self.failed_method))
         if self.failed_method:
             self.learning_state = copy.deepcopy(self.state)
-            #####
-            # call learning code here. maybe in a loop
-            #####
-        end = time.time()
-        print("******* total time for planning: {} ms*******".format(1000*(end-start)))
+            result = self.improvise(self.learning_state, self.failed_method, self.error_type)
+            if result == True:
+                self.room_plan = hop.plan(self.state,
+                                    [('get_resource',)],
+                                    hop.get_operators(),
+                                    hop.get_methods(),
+                                    verbose=3)
+
+    def improvise(self, sim_state, method_name, error_type):
+        # see what kind of error it is, if it's a precondition error, learn a
+        # new method for these preconditions.
+        # if it is an inventory error and then try the current inventory and
+        # see if an inventory edit can be learnt
+        if error_type == 'inventory':
+            #call the same function but with current available inventory
+            for tool in self.state.inventory:
+                if self.state.inventory[tool] == 1:
+                    result = self.methods[method_name](sim_state, tool)
+                    if result is True:
+                        self.preconditions['break_wall']['inventory'].append(tool)
+                        return True
+            return False
+        else:
+            print("NOT IMPLEMENTED YET! NEEDS REINFORCEMENT LEARNING MODULE TO LEARN A NEW METHOD!")
 
     #########################################################################
     # operators
@@ -183,7 +204,7 @@ class WallPlannerPlugin(PluginBase):
         return state
 
     def break_block(self, state, target):
-        if state.
+        #if state.
         state.targets[target]['broken'] = 1
         return state
 
@@ -200,7 +221,7 @@ class WallPlannerPlugin(PluginBase):
     # main task method. currently only way to get the resource
     def get_resource(self, state):
         print("calling get_resource")
-        return [('find_route', 'wall'), ('navigate','wall'),('break_wall', self.preconditions), ('find_route', 'gold'), ('navigate','gold'), ('acquire','gold')]
+        return [('find_route', 'wall'), ('navigate','wall'),('break_wall', self.preconditions['break_wall']['inventory']), ('find_route', 'gold'), ('navigate','gold'), ('acquire','gold')]
 
     def find_route(self, state, target):
         print("calling find_route with target: {}".format(target))
@@ -323,17 +344,23 @@ class WallPlannerPlugin(PluginBase):
             state.targets[target]['acquired'] = 1
             return [('move_forward',), ('acquire', target)]
 
-    def break_wall(self, state, preconditions):
-        tools = preconditions['break_wall']['inventory']
+    def break_wall(self, state, tools):
+        # tools = preconditions['break_wall']['inventory']
         # check preconditions:
-        if all([state.inventory[tool] == 0 for tool in tools]):
-            self.failed_method = 'break_wall'
-            return False
+        tool = None
+        for sample_tool in tools:
+            if self.state.inventory[sample_tool] == 1:
+                tool = sample_tool
+            else:
+                self.failed_method = 'break_wall'
+                self.error_type = 'inventory'
+                return False
         # if wall hasn't been reached at this point, method fails
         if state.targets['wall']['reached'] == 0:
             #print("wall has not been reached yet")
+            self.failed_method = 'break_wall'
+            self.error_type = 'preconditions'
             return False
-
         # actual method execution
         if state.equipment is None:
             #print("adding method equip_agent")
