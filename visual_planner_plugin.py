@@ -6,7 +6,7 @@ from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
 import utils.movement_utils as mvu
-PERCEPT_REQUEST_FREQUENCY = 1
+#PERCEPT_REQUEST_FREQUENCY = 1
 
 __author__ = 'Bradley Sheneman'
 logger = logging.getLogger('spockbot')
@@ -23,7 +23,8 @@ class VisualPlannerPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(VisualPlannerPlugin, self).__init__(ploader, settings)
         self.visual_percept = None
-        self.timers.reg_event_timer(PERCEPT_REQUEST_FREQUENCY, self.percept_request_tick)
+        # only necessary for testing. From now on just call 'request_visual_percept()'
+        #self.timers.reg_event_timer(PERCEPT_REQUEST_FREQUENCY, self.percept_request_tick)
 
     def handle_client_join(self, name, data):
         pos = self.clientinfo.position
@@ -31,11 +32,11 @@ class VisualPlannerPlugin(PluginBase):
         orientation = mvu.get_nearest_direction(pos.yaw)
         self.request_visual_percept(x, z, orientation)
 
-    def percept_request_tick(self):
-        pos = self.clientinfo.position
-        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        orientation = mvu.get_nearest_direction(pos.yaw)
-        self.request_visual_percept(x, z, orientation)
+    # def percept_request_tick(self):
+    #     pos = self.clientinfo.position
+    #     x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
+    #     orientation = mvu.get_nearest_direction(pos.yaw)
+    #     self.request_visual_percept(x, z, orientation)
 
     def request_visual_percept(self, x, z, orientation):
         data = {
