@@ -21,6 +21,7 @@ from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
 
 from wall_planner_plugin import WallPlannerPlugin
+from visual_planner_plugin import VisualPlannerPlugin
 #from test_planner_plugin import TestPlannerPlugin
 
 # spock utilities and plugins
@@ -52,7 +53,7 @@ settings = {
 plugins = default_plugins
 plugins.append(('TestRoom', TestRoomPlugin))
 
-plugins.append(('SensorTimers', SensorTimersPlugin))
+#plugins.append(('SensorTimers', SensorTimersPlugin))
 plugins.append(('SelfMovementSensor', SelfMovementSensorPlugin))
 plugins.append(('VisualSensor', VisualSensorPlugin))
 plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
@@ -60,7 +61,8 @@ plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 #plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 
-plugins.append(('WallPlanner', WallPlannerPlugin))
+# plugins.append(('WallPlanner', WallPlannerPlugin))
+plugins.append(('VisualPlanner', VisualPlannerPlugin))
 
 #plugins.append(('echo', EchoPacketPlugin))
 #plugins.append(('TestAgent', TestAgentPlugin))

@@ -35,7 +35,7 @@ class VisualSensorPlugin(PluginBase):
     def handle_camera_tick(self, name, data):
         blocks_percept = self.get_visible_blocks(data)
         #logger.debug("current visual percept: {}".format(blocks_percept))
-        #self.fov.draw_visual_percept(blocks_percept['blocks'])
+        self.fov.draw_visual_percept(blocks_percept['blocks'])
         self.event.emit('agent_visual_percept', blocks_percept)
 
     def get_visible_blocks(self, data):
