@@ -1,0 +1,528 @@
+OPERATORS: break_block, move_forward, turn_left, equip_agent, turn_right
+TASK:         METHODS:
+find_route    find_route
+get_resource  get_resource
+acquire       acquire_resource
+break_wall    break_wall
+navigate      navigate
+** hop, verbose=3: **
+   state = start_state
+   tasks = [('get_resource',)]
+depth 0 tasks [('get_resource',)]
+depth 0 method instance ('get_resource',)
+calling get_resource
+depth 0 new tasks: [('find_route', 'wall'), ('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 1 tasks [('find_route', 'wall'), ('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 1 method instance ('find_route', 'wall')
+calling find_route with target: wall
+start pos: (-67, 14, -44), goal pos: (-66, 14, -46)
+block: (-65, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+
+found end block at cur pos
+
+depth 1 new tasks: []
+depth 2 tasks [('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 2 method instance ('navigate', 'wall')
+calling navigate with target: wall
+depth 2 new tasks: [('move_forward',), ('navigate', 'wall')]
+depth 3 tasks [('move_forward',), ('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 3 action ('move_forward',)
+depth 3 new state:
+    start_state.path_found = 1
+    start_state.equipment = None
+    start_state.current_position = (-67, 14, -45)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 4 tasks [('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 4 method instance ('navigate', 'wall')
+calling navigate with target: wall
+depth 4 new tasks: [('turn_right',), ('navigate', 'wall')]
+depth 5 tasks [('turn_right',), ('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 5 action ('turn_right',)
+depth 5 new state:
+    start_state.path_found = 1
+    start_state.equipment = None
+    start_state.current_position = (-67, 14, -45)
+    start_state.current_orientation = -90.0
+    start_state.targets = {'wall': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 2
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 6 tasks [('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 6 method instance ('navigate', 'wall')
+calling navigate with target: wall
+depth 6 new tasks: [('move_forward',), ('navigate', 'wall')]
+depth 7 tasks [('move_forward',), ('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 7 action ('move_forward',)
+depth 7 new state:
+    start_state.path_found = 1
+    start_state.equipment = None
+    start_state.current_position = (-66, 14, -45)
+    start_state.current_orientation = -90.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 8 tasks [('navigate', 'wall'), ('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 8 method instance ('navigate', 'wall')
+calling navigate with target: wall
+setting wall to reached
+depth 8 new tasks: []
+depth 9 tasks [('break_wall', ['iron']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 9 method instance ('break_wall', ['iron'])
+checking if %s is available iron
+depth 9 new tasks: False
+** result = None 
+
+******* total time for planning: 1.2555122375488281 ms*******
+result of hop.plan(): None
+current failed method label: break_wall
+** hop, verbose=3: **
+   state = start_state
+   tasks = [('break_wall', ['steel'])]
+depth 0 tasks [('break_wall', ['steel'])]
+depth 0 method instance ('break_wall', ['steel'])
+checking if %s is available steel
+adding method equip_agent
+depth 0 new tasks: [('equip_agent', 'steel'), ('break_wall', ['steel'])]
+depth 1 tasks [('equip_agent', 'steel'), ('break_wall', ['steel'])]
+depth 1 action ('equip_agent', 'steel')
+depth 1 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-67, 14, -44)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 0, 'reached': 1, 'acquired': 0, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 2
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 2 tasks [('break_wall', ['steel'])]
+depth 2 method instance ('break_wall', ['steel'])
+checking if %s is available steel
+adding method break_block on wall
+depth 2 new tasks: [('acquire', 'wall')]
+depth 3 tasks [('acquire', 'wall')]
+depth 3 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 3 new tasks: [('break_block', 'wall'), ('acquire', 'wall')]
+depth 4 tasks [('break_block', 'wall'), ('acquire', 'wall')]
+depth 4 action ('break_block', 'wall')
+depth 4 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-67, 14, -44)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 1, 'reached': 1, 'acquired': 0, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 5 tasks [('acquire', 'wall')]
+depth 5 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 5 new tasks: [('move_forward',), ('acquire', 'wall')]
+depth 6 tasks [('move_forward',), ('acquire', 'wall')]
+depth 6 action ('move_forward',)
+depth 6 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-67, 14, -45)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 2
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 7 tasks [('acquire', 'wall')]
+depth 7 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 7 new tasks: []
+depth 8 tasks []
+depth 8 returns plan [('equip_agent', 'steel'), ('break_block', 'wall'), ('move_forward',)]
+** result = [('equip_agent', 'steel'), ('break_block', 'wall'), ('move_forward',)] 
+
+Learnt a new object just fine!
+** hop, verbose=3: **
+   state = start_state
+   tasks = [('get_resource',)]
+depth 0 tasks [('get_resource',)]
+depth 0 method instance ('get_resource',)
+calling get_resource
+depth 0 new tasks: [('find_route', 'wall'), ('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 1 tasks [('find_route', 'wall'), ('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 1 method instance ('find_route', 'wall')
+calling find_route with target: wall
+start pos: (-67, 14, -44), goal pos: (-66, 14, -46)
+block: (-65, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+
+found end block at cur pos
+
+depth 1 new tasks: []
+depth 2 tasks [('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 2 method instance ('navigate', 'wall')
+calling navigate with target: wall
+depth 2 new tasks: [('move_forward',), ('navigate', 'wall')]
+depth 3 tasks [('move_forward',), ('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 3 action ('move_forward',)
+depth 3 new state:
+    start_state.path_found = 1
+    start_state.equipment = None
+    start_state.current_position = (-67, 14, -45)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 4 tasks [('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 4 method instance ('navigate', 'wall')
+calling navigate with target: wall
+depth 4 new tasks: [('turn_right',), ('navigate', 'wall')]
+depth 5 tasks [('turn_right',), ('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 5 action ('turn_right',)
+depth 5 new state:
+    start_state.path_found = 1
+    start_state.equipment = None
+    start_state.current_position = (-67, 14, -45)
+    start_state.current_orientation = -90.0
+    start_state.targets = {'wall': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 2
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 6 tasks [('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 6 method instance ('navigate', 'wall')
+calling navigate with target: wall
+depth 6 new tasks: [('move_forward',), ('navigate', 'wall')]
+depth 7 tasks [('move_forward',), ('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 7 action ('move_forward',)
+depth 7 new state:
+    start_state.path_found = 1
+    start_state.equipment = None
+    start_state.current_position = (-66, 14, -45)
+    start_state.current_orientation = -90.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 8 tasks [('navigate', 'wall'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 8 method instance ('navigate', 'wall')
+calling navigate with target: wall
+setting wall to reached
+depth 8 new tasks: []
+depth 9 tasks [('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 9 method instance ('break_wall', ['iron', 'steel'])
+checking if %s is available iron
+checking if %s is available steel
+adding method equip_agent
+depth 9 new tasks: [('equip_agent', 'steel'), ('break_wall', ['iron', 'steel'])]
+depth 10 tasks [('equip_agent', 'steel'), ('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 10 action ('equip_agent', 'steel')
+depth 10 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -45)
+    start_state.current_orientation = -90.0
+    start_state.targets = {'wall': {'broken': 0, 'reached': 1, 'acquired': 0, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 2
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 11 tasks [('break_wall', ['iron', 'steel']), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 11 method instance ('break_wall', ['iron', 'steel'])
+checking if %s is available iron
+checking if %s is available steel
+adding method break_block on wall
+depth 11 new tasks: [('acquire', 'wall')]
+depth 12 tasks [('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 12 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 12 new tasks: [('turn_left',), ('acquire', 'wall')]
+depth 13 tasks [('turn_left',), ('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 13 action ('turn_left',)
+depth 13 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -45)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 0, 'reached': 1, 'acquired': 0, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 14 tasks [('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 14 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 14 new tasks: [('break_block', 'wall'), ('acquire', 'wall')]
+depth 15 tasks [('break_block', 'wall'), ('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 15 action ('break_block', 'wall')
+depth 15 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -45)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 0, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 2
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 16 tasks [('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 16 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 16 new tasks: [('move_forward',), ('acquire', 'wall')]
+depth 17 tasks [('move_forward',), ('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 17 action ('move_forward',)
+depth 17 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -46)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-67, 14, -45), (-66, 14, -45)]
+    start_state.path_length = 2
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 18 tasks [('acquire', 'wall'), ('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 18 method instance ('acquire', 'wall')
+calling acquire with target: wall
+depth 18 new tasks: []
+depth 19 tasks [('find_route', 'gold'), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 19 method instance ('find_route', 'gold')
+calling find_route with target: gold
+start pos: (-66, 14, -46), goal pos: (-68, 14, -50)
+block: (-65, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+block: (-65, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+block: (-65, 14, -46) is not traversable
+block: (-67, 14, -46) is not traversable
+block: (-64, 14, -46) is not traversable
+block: (-68, 14, -46) is not traversable
+block: (-64, 14, -46) is not traversable
+block: (-68, 14, -46) is not traversable
+block: (-63, 14, -46) is not traversable
+block: (-62, 14, -45) is not traversable
+block: (-69, 14, -46) is not traversable
+block: (-70, 14, -45) is not traversable
+block: (-63, 14, -46) is not traversable
+block: (-62, 14, -47) is not traversable
+block: (-69, 14, -46) is not traversable
+block: (-70, 14, -47) is not traversable
+block: (-62, 14, -44) is not traversable
+block: (-70, 14, -44) is not traversable
+
+found end block at cur pos
+
+depth 19 new tasks: []
+depth 20 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 20 method instance ('navigate', 'gold')
+calling navigate with target: gold
+depth 20 new tasks: [('move_forward',), ('navigate', 'gold')]
+depth 21 tasks [('move_forward',), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 21 action ('move_forward',)
+depth 21 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -47)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 5
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 1
+depth 22 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 22 method instance ('navigate', 'gold')
+calling navigate with target: gold
+depth 22 new tasks: [('move_forward',), ('navigate', 'gold')]
+depth 23 tasks [('move_forward',), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 23 action ('move_forward',)
+depth 23 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -48)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.path_length = 5
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 2
+depth 24 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 24 method instance ('navigate', 'gold')
+calling navigate with target: gold
+depth 24 new tasks: [('move_forward',), ('navigate', 'gold')]
+depth 25 tasks [('move_forward',), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 25 action ('move_forward',)
+depth 25 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -49)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 5
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 3
+depth 26 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 26 method instance ('navigate', 'gold')
+calling navigate with target: gold
+depth 26 new tasks: [('turn_left',), ('navigate', 'gold')]
+depth 27 tasks [('turn_left',), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 27 action ('turn_left',)
+depth 27 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-66, 14, -49)
+    start_state.current_orientation = 90.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.path_length = 5
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 3
+depth 28 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 28 method instance ('navigate', 'gold')
+calling navigate with target: gold
+depth 28 new tasks: [('move_forward',), ('navigate', 'gold')]
+depth 29 tasks [('move_forward',), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 29 action ('move_forward',)
+depth 29 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-67, 14, -49)
+    start_state.current_orientation = 90.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 5
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 4
+depth 30 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 30 method instance ('navigate', 'gold')
+calling navigate with target: gold
+depth 30 new tasks: [('move_forward',), ('navigate', 'gold')]
+depth 31 tasks [('move_forward',), ('navigate', 'gold'), ('acquire', 'gold')]
+depth 31 action ('move_forward',)
+depth 31 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-68, 14, -49)
+    start_state.current_orientation = 90.0
+    start_state.targets = {'gold': {'broken': 0, 'reached': 0, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.path_length = 5
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 5
+depth 32 tasks [('navigate', 'gold'), ('acquire', 'gold')]
+depth 32 method instance ('navigate', 'gold')
+calling navigate with target: gold
+setting gold to reached
+depth 32 new tasks: []
+depth 33 tasks [('acquire', 'gold')]
+depth 33 method instance ('acquire', 'gold')
+calling acquire with target: gold
+depth 33 new tasks: [('turn_right',), ('acquire', 'gold')]
+depth 34 tasks [('turn_right',), ('acquire', 'gold')]
+depth 34 action ('turn_right',)
+depth 34 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-68, 14, -49)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}, 'gold': {'broken': 0, 'reached': 1, 'acquired': 0, 'location': (-68, 14, -50)}}
+    start_state.path_length = 5
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 5
+depth 35 tasks [('acquire', 'gold')]
+depth 35 method instance ('acquire', 'gold')
+calling acquire with target: gold
+depth 35 new tasks: [('break_block', 'gold'), ('acquire', 'gold')]
+depth 36 tasks [('break_block', 'gold'), ('acquire', 'gold')]
+depth 36 action ('break_block', 'gold')
+depth 36 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-68, 14, -49)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'gold': {'broken': 1, 'reached': 1, 'acquired': 0, 'location': (-68, 14, -50)}, 'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}}
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.path_length = 5
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 5
+depth 37 tasks [('acquire', 'gold')]
+depth 37 method instance ('acquire', 'gold')
+calling acquire with target: gold
+depth 37 new tasks: [('move_forward',), ('acquire', 'gold')]
+depth 38 tasks [('move_forward',), ('acquire', 'gold')]
+depth 38 action ('move_forward',)
+depth 38 new state:
+    start_state.path_found = 1
+    start_state.equipment = steel
+    start_state.current_position = (-68, 14, -50)
+    start_state.current_orientation = 180.0
+    start_state.targets = {'wall': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-66, 14, -46)}, 'gold': {'broken': 1, 'reached': 1, 'acquired': 1, 'location': (-68, 14, -50)}}
+    start_state.path_length = 5
+    start_state.path = [(-66, 14, -47), (-66, 14, -48), (-66, 14, -49), (-67, 14, -49), (-68, 14, -49)]
+    start_state.inventory = {'iron': 0, 'steel': 1, 'wood': 1}
+    start_state.start_loc = (-67, 14, -44)
+    start_state.path_idx = 5
+depth 39 tasks [('acquire', 'gold')]
+depth 39 method instance ('acquire', 'gold')
+calling acquire with target: gold
+depth 39 new tasks: []
+depth 40 tasks []
+depth 40 returns plan [('move_forward',), ('turn_right',), ('move_forward',), ('equip_agent', 'steel'), ('turn_left',), ('break_block', 'wall'), ('move_forward',), ('move_forward',), ('move_forward',), ('move_forward',), ('turn_left',), ('move_forward',), ('move_forward',), ('turn_right',), ('break_block', 'gold'), ('move_forward',)]
+** result = [('move_forward',), ('turn_right',), ('move_forward',), ('equip_agent', 'steel'), ('turn_left',), ('break_block', 'wall'), ('move_forward',), ('move_forward',), ('move_forward',), ('move_forward',), ('turn_left',), ('move_forward',), ('move_forward',), ('turn_right',), ('break_block', 'gold'), ('move_forward',)] 
+
+calling operator move
+calling operator look right
+calling operator move
+calling operator look left
+calling operator break obstacle
+calling operator move
+calling operator move
+calling operator move
+calling operator move
+calling operator look left
+calling operator move
+calling operator move
+calling operator look right
+calling operator break obstacle
+calling operator move
+no plan to execute
+no plan to execute
+no plan to execute
+no plan to execute
+no plan to execute
+no plan to execute

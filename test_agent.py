@@ -61,8 +61,8 @@ plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 #plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 
-# plugins.append(('WallPlanner', WallPlannerPlugin))
-plugins.append(('VisualPlanner', VisualPlannerPlugin))
+plugins.append(('WallPlanner', WallPlannerPlugin))
+# plugins.append(('VisualPlanner', VisualPlannerPlugin))
 
 #plugins.append(('echo', EchoPacketPlugin))
 #plugins.append(('TestAgent', TestAgentPlugin))
