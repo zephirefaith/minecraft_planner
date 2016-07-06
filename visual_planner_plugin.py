@@ -377,73 +377,45 @@ class VisualPlannerPlugin(PluginBase):
             if next_z < cur_z:
                 if state.agent['cur_theta'] == DIR_NORTH:
                     state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire',target)]
+                    return [('break_block',target), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_left',), ('acquire',target)]
+                    return [('turn_left',), ('acquire_gold',target)]
             if next_z > cur_z:
                 if state.agent['cur_theta'] == DIR_SOUTH:
                     state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire',target)]
+                    return [('break_block',target), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_left',), ('acquire',target)]
+                    return [('turn_left',), ('acquire_gold',target)]
             if next_x < cur_x:
                 if state.agent['cur_theta'] == DIR_WEST:
                     state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire',target)]
+                    return [('break_block',target), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_left',), ('acquire',target)]
+                    return [('turn_left',), ('acquire_gold',target)]
             if next_x > cur_x:
                 if state.agent['cur_theta'] == DIR_EAST:
                     state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire',target)]
+                    return [('break_block',target), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_right',), ('acquire',target)]
+                    return [('turn_right',), ('acquire_gold',target)]
                 elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_left',), ('acquire',target)]
+                    return [('turn_left',), ('acquire_gold',target)]
             return []
         else:
             # gold block is broken, but not yet acquired
             state.targets[target]['acquired'] = 1
-            return [('move_forward',), ('acquire', target)]
-
-    # def break_wall(self, state, tools):
-    #     # tools = preconditions['break_wall']['inventory']
-    #     # check preconditions:
-    #     tool = None
-    #     for sample_tool in tools:
-    #         print("checking if %s is available", sample_tool)
-    #         if self.state.inventory[sample_tool] == 1:
-    #             tool = sample_tool
-    #
-    #     if tool is None:
-    #         self.failed_method = 'break_wall'
-    #         self.error_type = 'inventory'
-    #         return False
-    #     # if wall hasn't been reached at this point, method fails
-    #     if state.targets['wall']['reached'] == 0:
-    #         print("wall has not been reached yet")
-    #         self.failed_method = 'break_wall'
-    #         self.error_type = 'preconditions'
-    #         return False
-    #     # actual method execution
-    #     if state.equipment is None:
-    #         print("adding method equip_agent")
-    #         return [('equip_agent', tool),('break_wall', tools)]
-    #     elif state.targets['wall']['broken'] == 0:
-    #         print("adding method break_block on wall")
-    #         return [('acquire','wall')]
-    #     return False
+            return [('move_forward',), ('acquire_gold', target)]
