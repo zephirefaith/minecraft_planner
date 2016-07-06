@@ -11,10 +11,19 @@ from pyhop import hop
 from test_room_plugin import TestRoomPlugin, START_COORDS
 import utils.movement_utils as mvu
 from utils.constants import *
-#PERCEPT_REQUEST_FREQUENCY = 1
+
+ACTION_TICK_FREQUENCY = 1
+
+#########################################################################
+# information
+#########################################################################
 
 __author__ = ['Bradley Sheneman', 'Priyam Parashar']
 logger = logging.getLogger('spockbot')
+
+#########################################################################
+# initialization
+#########################################################################
 
 @pl_announce('VisualPlanner')
 class VisualPlannerPlugin(PluginBase):
@@ -29,7 +38,7 @@ class VisualPlannerPlugin(PluginBase):
     }
 
     #########################################################################
-    # initializations
+    # plugin events
     #########################################################################
 
     def __init__(self, ploader, settings):
@@ -38,6 +47,62 @@ class VisualPlannerPlugin(PluginBase):
         self.init_planner()
         self.init_operators()
         ploader.provides('VisualPlanner', self)
+
+    def handle_client_join(self, name, data):
+        self.perceive()
+        logger.info("Agent's Percepts: {}".format(self.visual_percept))
+
+    def handle_block_update(self, name, data):
+        # gold block spawned in world. call the planner
+        if data['block_data'] >> 4 == 41:
+            pos = self.clientinfo.position
+            self.state.start_loc = mvu.get_nearest_position(pos.x, pos.y, pos.z)
+            self.state.current_position = self.state.start_loc
+            self.state.current_orientation = mvu.get_nearest_direction(pos.yaw)
+
+            block_pos = data['location']
+            # self.state.targets['gold']['location'] = (
+            #     block_pos['x'],
+            #     block_pos['y'],
+            #     block_pos['z'])
+
+            self.solve()
+            if self.room_plan is not None and len(self.room_plan) > 0:
+                logger.info("plan succeeded")
+                logger.info("total room plan: {}".format(self.room_plan))
+                self.event.emit("agent_planning_complete")
+                self.plan_idx = 0
+            else:
+                logger.info("plan failed")
+                self.event.emit("agent_planning_failed")
+
+    def handle_visual_percept(self, name, data):
+        logger.debug("handling percept: {}".format(data))
+        self.visual_percept = data
+
+    def perceive(self):
+        pos = self.clientinfo.position
+        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
+        orientation = mvu.get_nearest_direction(pos.yaw)
+        self.request_visual_percept(x, z, orientation)
+
+    def request_visual_percept(self, x, z, orientation):
+        data = {
+            'x':x,
+            'y':13,
+            'z':z,
+            'pitch':0,
+            'yaw':orientation,
+        }
+        logger.debug("sending request with data: {}".format(data))
+        self.event.emit('sensor_tick_vision', data)
+
+    def register_execution_timer(self, name, data):
+        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute_and_monitor)
+
+    #########################################################################
+    # planner helper functions
+    #########################################################################
 
     def init_planner(self):
         logger.info("adding atomic operators to pyhop")
@@ -69,105 +134,47 @@ class VisualPlannerPlugin(PluginBase):
     def init_state(self):
         # set state variables to be used by operators and methods
         self.state = hop.State('start_state')
-        self.state.gold = { 'state': None, 'hemisphere': None}
+
+        # variables in this minecraft world
+        self.state.objects = {
+            'gold',
+            'stone_block',
+        }
+        self.state.tools = {}
+
+        # information structure for keeping track of world state
+        self.state.resources = {}
+        for obj in self.state.objects:
+            self.state.resources[obj] = {
+                'state':        None,
+                'hemisphere':   None,
+            }
+
+        # information structure to keep track of sel state
         # State = None: not located yet, 0: seen but not near, 1: near, -1: broken
         # Hemisphere = None: Haven't seen so far, -1: was to the left of the cone,
         # 0: was in the center, +1: was to the right of the cone
-        self.state.resource = 0
-        # 0: not acquired, 1: acquired
-        self.state.need_percept = 0
+        self.state.agent = {
+            'cur_xy':       None,
+            'cur_theta':    None,
+            'start_xy':     None,
+            'start_theta':  None,
+        }
+        self.state.inventory = {}
+        for obj in self.state.objects:
+            self.state.inventory[obj] = {
+                self.state.inventory[obj] = 0,
+            }
+        # self.state.need_percept = 0
 
         #goal state
         self.goal_state = hop.State('goal_state')
-        self.state.gold = { 'state': -1, 'hemisphere': 0}
-        self.goal_state.resource = 1
-        #self.state.percept_update = 0
-        #self.failed_method = None
-        # self.preconditions = {
-        #     'break_wall' : {
-        #         'precondition'  : None,
-        #         'inventory'     : ['iron'],
-        #     },
-        # }
-        # self.methods = {
-        #     'break_wall' : self.break_wall
-        # }
-
-
-    #########################################################################
-    # plugin events
-    #########################################################################
-
-    def handle_client_join(self, name, data):
-        pos = self.clientinfo.position
-        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        orientation = mvu.get_nearest_direction(pos.yaw)
-        self.request_visual_percept(x, z, orientation)
-
-    def handle_block_update(self, name, data):
-        # gold block spawned in world. call the planner
-        if data['block_data'] >> 4 == 41:
-            pos = self.clientinfo.position
-            self.state.start_loc = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-            self.state.current_position = self.state.start_loc
-            self.state.current_orientation = mvu.get_nearest_direction(pos.yaw)
-
-            block_pos = data['location']
-            # self.state.targets['gold']['location'] = (
-            #     block_pos['x'],
-            #     block_pos['y'],
-            #     block_pos['z'])
-
-            self.solve()
-            if self.room_plan is not None and len(self.room_plan) > 0:
-                logger.info("plan succeeded")
-                logger.info("total room plan: {}".format(self.room_plan))
-                self.event.emit("agent_planning_complete")
-                self.plan_idx = 0
-            else:
-                logger.info("plan failed")
-                self.event.emit("agent_planning_failed")
-
-    def handle_visual_percept(self, name, data):
-        logger.debug("handling percept: {}".format(data))
-        self.visual_percept = data
-
-    def request_visual_percept(self, x, z, orientation):
-        data = {
-            'x':x,
-            'y':13,
-            'z':z,
-            'pitch':0,
-            'yaw':orientation,
+        self.goal_state.resources['gold'] = {
+            'state': -1,
+            'hemisphere': 0,
         }
-        logger.debug("sending request with data: {}".format(data))
-        self.event.emit('sensor_tick_vision', data)
+        self.goal_state.inventory['gold'] = 1
 
-    def register_execution_timer(self, name, data):
-        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute_and_monitor)
-
-    def execute_and_monitor(self):
-        # a function which executes returned plan, senses
-        # percepts and decides if replanning should be done
-        if not self.room_plan:
-            print("no plan to execute")
-            return
-        plan_op = self.room_plan[self.plan_idx][0]
-        self.op_translations[plan_op]()
-        self.plan_idx += 1
-        if self.plan_idx == len(self.room_plan):
-            self.room_plan = []
-            self.init_state()
-        return False
-
-    # def percept_request_tick(self):
-    #     pos = self.clientinfo.position
-    #     x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-    #     orientation = mvu.get_nearest_direction(pos.yaw)
-    #     self.request_visual_percept(x, z, orientation)
-    #########################################################################
-    # planner helper functions
-    #########################################################################
 
     def solve(self):
         start = time.time()
@@ -180,62 +187,45 @@ class VisualPlannerPlugin(PluginBase):
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
         print("result of hop.plan(): {}".format(self.room_plan))
         print("last failed method label: {}".format(self.failed_method))
-        # if self.failed_method:
-        #     self.learning_state = copy.deepcopy(self.state)
-        #     self.learning_state.targets['wall']['reached'] = 1
-        #     result = self.improvise(self.learning_state, self.failed_method, self.error_type)
-        #     if result == True:
-        #         print("Learnt a new object just fine!")
-        #         self.room_plan = hop.plan(self.state,
-        #                             [('get_resource',)],
-        #                             hop.get_operators(),
-        #                             hop.get_methods(),
-        #                             verbose=3)
-        #     else:
-        #         print("Could not learn anything :(")
 
-    def execution_tick(self):
-    #executor which executes, senses and replans --> maybe call a different agent_executor here?
+    def execute_and_monitor(self):
+        # a function which executes returned plan, senses
+        # percepts and decides if replanning should be done
         if not self.room_plan:
             print("no plan to execute")
             return
+
+        # we have a plan
+        # execute
         plan_op = self.room_plan[self.plan_idx][0]
         self.op_translations[plan_op]()
         self.plan_idx += 1
+
+        # perceive
+        self.perceive()
+
+        # monitor --> replan if assertion is fulfilled
+        # later --> compare and analyze expected VS actual state
         if self.plan_idx == len(self.room_plan):
             self.room_plan = []
             self.init_state()
+        return False
 
-    # TODO: Add learning once perceptual-dynamic-planner is setup
+    # IDEA: Add learning once perceptual-dynamic-planner is setup
 
-    # a function for learning a new method or a new tool
-    # def improvise(self, sim_state, method_name, error_type):
-    #     # see what kind of error it is, if it's a precondition error, learn a
-    #     # new method for these preconditions.
-    #     # if it is an inventory error and then try the current inventory and
-    #     # see if an inventory edit can be learnt
-    #     if error_type == 'inventory':
-    #         #call the same function but with current available inventory
-    #         for tool in self.state.inventory:
-    #             if self.state.inventory[tool] == 1:
-    #                 tool_list = []
-    #                 tool_list.append(tool)
-    #                 result = hop.plan(sim_state,
-    #                             [(method_name, tool_list)],
-    #                             hop.get_operators(),
-    #                             hop.get_methods(),
-    #                             verbose=2) #[method_name](sim_state, [tool])
-    #                 if result is not None:
-    #                     self.preconditions['break_wall']['inventory'].append(tool)
-    #                     return True
-    #         return False
-    #     else:
-    #         print("NOT IMPLEMENTED YET! NEEDS REINFORCEMENT LEARNING MODULE TO LEARN A NEW METHOD!")
+    #########################################################################
+    # planner knowledge base
+    #########################################################################
 
+    #assertion list
+    self.state.assertions = {
+    }
 
     #########################################################################
     # operators
     #########################################################################
+
+    # TODO: change operators to suit new variable + knowledge structure
     def move_forward(self, state):
         x,y,z = state.current_position
         if (state.current_orientation == DIR_NORTH):
@@ -257,22 +247,16 @@ class VisualPlannerPlugin(PluginBase):
         return state
 
     def break_block(self, state, target):
-        if state.equipment == 'steel' or state.equipment == 'iron':
-            state.targets[target]['broken'] = 1
+            state.resources[target]['state'] = -1
             return state
         else:
             return False
 
-    # def equip_agent(self, state, tool):
-    #     if tool is None:
-    #         return False
-    #     else:
-    #         state.equipment = tool
-    #         return state
-
     #########################################################################
     # methods
     #########################################################################
+
+    # TODO: change methods to suit new variable + knowledge structure
     # main task method. currently only way to get the resource
     def get_resource(self, state):
         print("calling get_resource")
@@ -286,12 +270,6 @@ class VisualPlannerPlugin(PluginBase):
         return [('search_for_gold',),('move_closer',),('acquire_gold',)]
 
     def search_for_gold(self, state):
-        print("getting sensor data")
-        pos = self.clientinfo.position
-        x,y,z = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-        orientation = mvu.get_nearest_direction(pos.yaw)
-        self.request_visual_percept(x, z, orientation)
-        print(self.visual_percept)
         i=0
         for coords in self.visual_percept['coords']:
             i=i+1
