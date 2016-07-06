@@ -101,6 +101,13 @@ class VisualPlannerPlugin(PluginBase):
     def register_execution_timer(self, name, data):
         self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute_and_monitor)
 
+    def init_operators(self):
+        self.op_translations = {
+            'move_forward': self.atomicoperators.operator_move,
+            'turn_left': self.atomicoperators.operator_look_left,
+            'turn_right': self.atomicoperators.operator_look_right,
+            'break_block': self.atomicoperators.operator_break_obstacle,}
+
     #########################################################################
     # planner helper functions
     #########################################################################
@@ -125,24 +132,16 @@ class VisualPlannerPlugin(PluginBase):
         # hop.declare_methods('break_wall', self.break_wall)
         hop.print_methods(hop.get_methods())
 
-    def init_operators(self):
-        self.op_translations = {
-            'move_forward': self.atomicoperators.operator_move,
-            'turn_left': self.atomicoperators.operator_look_left,
-            'turn_right': self.atomicoperators.operator_look_right,
-            'break_block': self.atomicoperators.operator_break_obstacle,}
-
     def init_state(self):
         # set state variables to be used by operators and methods
         self.state = hop.State('start_state')
-
+        # TODO: convert everything into one directory which has 'resource', 'inventory' key all in one
         # variables in this minecraft world
         self.state.objects = {
             'gold',
             'stone_block',
         }
         self.state.tools = {}
-
         # information structure for keeping track of world state
         self.state.resources = {}
         for obj in self.state.objects:
@@ -150,8 +149,7 @@ class VisualPlannerPlugin(PluginBase):
                 'state':        None,
                 'hemisphere':   None,
             }
-
-        # information structure to keep track of sel state
+        # information structure to keep track of self state
         # State = None: not located yet, 0: seen but not near, 1: near, -1: broken
         # Hemisphere = None: Haven't seen so far, -1: was to the left of the cone,
         # 0: was in the center, +1: was to the right of the cone
@@ -167,7 +165,6 @@ class VisualPlannerPlugin(PluginBase):
                 self.state.inventory[obj] = 0,
             }
         # self.state.need_percept = 0
-
         #goal state
         self.goal_state = hop.State('goal_state')
         self.goal_state.resources['gold'] = {
@@ -175,7 +172,6 @@ class VisualPlannerPlugin(PluginBase):
             'hemisphere': 0,
         }
         self.goal_state.inventory['gold'] = 1
-
 
     def solve(self):
         start = time.time()
@@ -187,7 +183,7 @@ class VisualPlannerPlugin(PluginBase):
         end = time.time()
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
         print("result of hop.plan(): {}".format(self.room_plan))
-        print("last failed method label: {}".format(self.failed_method))
+        #print("last failed method label: {}".format(self.failed_method))
 
     def execute_and_monitor(self):
         # a function which executes returned plan, senses
@@ -195,16 +191,13 @@ class VisualPlannerPlugin(PluginBase):
         if not self.room_plan:
             print("no plan to execute")
             return
-
         # we have a plan
         # execute
         plan_op = self.room_plan[self.plan_idx][0]
         self.op_translations[plan_op]()
         self.plan_idx += 1
-
         # perceive
         self.perceive()
-
         # monitor --> replan if assertion is fulfilled
         # later --> compare and analyze expected VS actual state
         if self.plan_idx == len(self.room_plan):
@@ -212,13 +205,27 @@ class VisualPlannerPlugin(PluginBase):
             self.init_state()
         return False
 
+    def check_assertion(self, assertion, state):
+        # directories where assertions could be checked
+        keys = ['resources', 'inventory']
+        result = 1
+        if keys[0] in assertion:
+            for obj in assertion[keys[0]]:
+                for condition in assertion[keys[0]][obj]:
+                    result = result & (state.resources[obj][condition] == assertion[keys[0]][obj][condition])
+        if keys[1] in assertion:
+            for obj in assertion[keys[1]]:
+                for condition in assertion[keys[0]][obj]:
+                    result = result & (state.inventory[obj][condition] == assertion[keys[1]][obj][condition])
+        return result
+
     # IDEA: Add learning once perceptual-dynamic-planner is setup
 
     #########################################################################
     # planner knowledge base
     #########################################################################
 
-    self.state.assertions = {
+    self.htn.assertions = {
         1: {
             'resources': {
                 'gold': {
@@ -276,13 +283,11 @@ class VisualPlannerPlugin(PluginBase):
     def get_resource(self, state):
         print("calling get_resource")
         #multiple "check-points" to plan to and then replan/plan for the later part
-        if state.resources['gold']['state'] = None:
-            return [('search_for_gold',)]
-        if state.resources['gold']['state'] = 0:
+        if self.check_assertion(self.htn.assertions[1], state) == 1:
             return [('move_closer',)]
-        if state.resources['gold']['state'] = 1:
+        if self.check_assertion(self.htn.assertions[2], state) == 1:
             return [('acquire_gold')]
-        return [('search_for_gold',),('move_closer',),('acquire_gold',)]
+        return [('search_for_gold',)]
 
     def search_for_gold(self, state):
         # TODO: new logic for 360 deg rounds until gold is sighted
