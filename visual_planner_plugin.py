@@ -218,15 +218,29 @@ class VisualPlannerPlugin(PluginBase):
     # planner knowledge base
     #########################################################################
 
-    # TODO: structure and complete assertion list
     self.state.assertions = {
+        1: {
+            'resources': {
+                'gold': {
+                    'state': 0,
+                },
+            },
+        },
+        # gold must be in sight to plan how to navigate
+        2: {
+            'resources': {
+                'gold': {
+                    'state': 1,
+                },
+            },
+        },
+        # agent must be next to gold block to plan how to break it
     }
 
     #########################################################################
     # operators
     #########################################################################
 
-    # TODO: change operators to suit new variable + knowledge structure
     def move_forward(self, state):
         x,y,z = state.agent['cur_xyz']
         if (state.agent['cur_theta'] == DIR_NORTH):
