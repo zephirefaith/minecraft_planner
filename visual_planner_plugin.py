@@ -262,95 +262,97 @@ class VisualPlannerPlugin(PluginBase):
     def get_resource(self, state):
         print("calling get_resource")
         #multiple "check-points" to plan to and then replan/plan for the later part
-        if self.state.gold['state'] = None:
+        if state.resources['gold']['state'] = None:
             return [('search_for_gold',)]
-        if self.state.gold['state'] = 0:
+        if state.resources['gold']['state'] = 0:
             return [('move_closer',)]
-        if self.state.gold['state'] = 1:
+        if state.resources['gold']['state'] = 1:
             return [('acquire_gold')]
         return [('search_for_gold',),('move_closer',),('acquire_gold',)]
 
     def search_for_gold(self, state):
-        i=0
-        for coords in self.visual_percept['coords']:
-            i=i+1
-            if i == 1:
-                continue
-            else:
-                if self.visual_percept['blocks'][coords] == 35:
-                    self.state.gold_in_sight = 1
-                    break
-        if self.state.gold_in_sight == 0:
-            self.state.need_percept = 1
-            print("Turning 360 deg clockwise to locate gold")
-            return ['turn_right']
-        else:
-            print("gold found")
-            return []
+        # TODO: new logic for 360 deg rounds until gold is sighted
+        # i=0
+        # for coords in self.visual_percept['coords']:
+        #     i=i+1
+        #     if i == 1:
+        #         continue
+        #     else:
+        #         if self.visual_percept['blocks'][coords] == 35:
+        #             self.state.gold_in_sight = 1
+        #             break
+        # if self.state.gold_in_sight == 0:
+        #     self.state.need_percept = 1
+        #     print("Turning 360 deg clockwise to locate gold")
+        #     return ['turn_right']
+        # else:
+        #     print("gold found")
+        #     return []
         # if the current percept has gold --> continue to navigation
         # if not --> move and get percept again
 
     def move_closer(self, state):
-        print("calling navigate with target: {}".format(target))
-        if state.path_idx == len(state.path):
-            print("setting "+target+" to reached")
-            state.targets[target]['reached'] = 1
-            return []
-        if state.path_found == 1 and state.targets[target]['reached'] == 0:
-            cur_x,cur_y,cur_z = state.agent['cur_xyz']
-            next_x,next_y,next_z = state.path[state.path_idx]
-            if next_x > cur_x:
-                if state.agent['cur_theta'] == DIR_EAST:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_left',), ('navigate', target)]
-            elif next_x < cur_x:
-                if state.agent['cur_theta'] == DIR_WEST:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_left',), ('navigate', target)]
-            elif next_z > cur_z:
-                if state.agent['cur_theta'] == DIR_SOUTH:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_left',), ('navigate', target)]
-            elif next_z < cur_z:
-                if state.agent['cur_theta'] == DIR_NORTH:
-                    state.path_idx = state.path_idx + 1
-                    return [('move_forward',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_right',), ('navigate', target)]
-                elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_left',), ('navigate', target)]
-            return []
-        else:
-            return False
+        # TODO: new logic for navigation as per visual percept
+        # print("calling navigate with target: {}".format(target))
+        # if state.path_idx == len(state.path):
+        #     print("setting "+target+" to reached")
+        #     state.targets[target]['reached'] = 1
+        #     return []
+        # if state.path_found == 1 and state.targets[target]['reached'] == 0:
+        #     cur_x,cur_y,cur_z = state.agent['cur_xyz']
+        #     next_x,next_y,next_z = state.path[state.path_idx]
+        #     if next_x > cur_x:
+        #         if state.agent['cur_theta'] == DIR_EAST:
+        #             state.path_idx = state.path_idx + 1
+        #             return [('move_forward',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_WEST:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_NORTH:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_SOUTH:
+        #             return [('turn_left',), ('navigate', target)]
+        #     elif next_x < cur_x:
+        #         if state.agent['cur_theta'] == DIR_WEST:
+        #             state.path_idx = state.path_idx + 1
+        #             return [('move_forward',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_SOUTH:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_EAST:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_NORTH:
+        #             return [('turn_left',), ('navigate', target)]
+        #     elif next_z > cur_z:
+        #         if state.agent['cur_theta'] == DIR_SOUTH:
+        #             state.path_idx = state.path_idx + 1
+        #             return [('move_forward',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_EAST:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_NORTH:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_WEST:
+        #             return [('turn_left',), ('navigate', target)]
+        #     elif next_z < cur_z:
+        #         if state.agent['cur_theta'] == DIR_NORTH:
+        #             state.path_idx = state.path_idx + 1
+        #             return [('move_forward',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_WEST:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_SOUTH:
+        #             return [('turn_right',), ('navigate', target)]
+        #         elif state.agent['cur_theta'] == DIR_EAST:
+        #             return [('turn_left',), ('navigate', target)]
+        #     return []
+        # else:
+        #     return False
 
     def acquire_resource(self, state, target):
         print("calling acquire with target: {}".format(target))
-        if state.targets[target]['acquired'] == 1:
+        if state.inventory[target] == 1:
             return []
-        if (state.targets[target]['reached'] == 1 and
-            state.targets[target]['broken'] == 0):
+        if state.resources[target]['state'] == 1:
             #gold block not yet broken
             #face the block, if already facing then break the block
+            # TODO: probably agent will always face the block depending upon how navigation is implemented
             cur_x,cur_y,cur_z = state.agent['cur_xyz']
             next_x,next_y,next_z = state.targets[target]['location']
             if next_z < cur_z:
@@ -399,30 +401,30 @@ class VisualPlannerPlugin(PluginBase):
             state.targets[target]['acquired'] = 1
             return [('move_forward',), ('acquire', target)]
 
-    def break_wall(self, state, tools):
-        # tools = preconditions['break_wall']['inventory']
-        # check preconditions:
-        tool = None
-        for sample_tool in tools:
-            print("checking if %s is available", sample_tool)
-            if self.state.inventory[sample_tool] == 1:
-                tool = sample_tool
-
-        if tool is None:
-            self.failed_method = 'break_wall'
-            self.error_type = 'inventory'
-            return False
-        # if wall hasn't been reached at this point, method fails
-        if state.targets['wall']['reached'] == 0:
-            print("wall has not been reached yet")
-            self.failed_method = 'break_wall'
-            self.error_type = 'preconditions'
-            return False
-        # actual method execution
-        if state.equipment is None:
-            print("adding method equip_agent")
-            return [('equip_agent', tool),('break_wall', tools)]
-        elif state.targets['wall']['broken'] == 0:
-            print("adding method break_block on wall")
-            return [('acquire','wall')]
-        return False
+    # def break_wall(self, state, tools):
+    #     # tools = preconditions['break_wall']['inventory']
+    #     # check preconditions:
+    #     tool = None
+    #     for sample_tool in tools:
+    #         print("checking if %s is available", sample_tool)
+    #         if self.state.inventory[sample_tool] == 1:
+    #             tool = sample_tool
+    #
+    #     if tool is None:
+    #         self.failed_method = 'break_wall'
+    #         self.error_type = 'inventory'
+    #         return False
+    #     # if wall hasn't been reached at this point, method fails
+    #     if state.targets['wall']['reached'] == 0:
+    #         print("wall has not been reached yet")
+    #         self.failed_method = 'break_wall'
+    #         self.error_type = 'preconditions'
+    #         return False
+    #     # actual method execution
+    #     if state.equipment is None:
+    #         print("adding method equip_agent")
+    #         return [('equip_agent', tool),('break_wall', tools)]
+    #     elif state.targets['wall']['broken'] == 0:
+    #         print("adding method break_block on wall")
+    #         return [('acquire','wall')]
+    #     return False
