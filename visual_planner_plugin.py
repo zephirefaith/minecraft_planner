@@ -56,9 +56,10 @@ class VisualPlannerPlugin(PluginBase):
         # gold block spawned in world. call the planner
         if data['block_data'] >> 4 == 41:
             pos = self.clientinfo.position
-            self.state.start_loc = mvu.get_nearest_position(pos.x, pos.y, pos.z)
-            self.state.current_position = self.state.start_loc
-            self.state.current_orientation = mvu.get_nearest_direction(pos.yaw)
+            self.state.agent['start_xyz'] = mvu.get_nearest_position(pos.x, pos.y, pos.z)
+            self.state.agent['cur_xyz'] = self.state.agent['start_xyz']
+            self.state.agent['start_theta'] = mvu.get_nearest_direction(pos.yaw)
+            self.state.agent['cur_theta'] = self.state.agent['start_theta']
 
             block_pos = data['location']
             # self.state.targets['gold']['location'] = (
@@ -155,9 +156,9 @@ class VisualPlannerPlugin(PluginBase):
         # Hemisphere = None: Haven't seen so far, -1: was to the left of the cone,
         # 0: was in the center, +1: was to the right of the cone
         self.state.agent = {
-            'cur_xy':       None,
+            'cur_xyz':       None,
             'cur_theta':    None,
-            'start_xy':     None,
+            'start_xyz':     None,
             'start_theta':  None,
         }
         self.state.inventory = {}
@@ -217,7 +218,7 @@ class VisualPlannerPlugin(PluginBase):
     # planner knowledge base
     #########################################################################
 
-    #assertion list
+    # TODO: structure and complete assertion list
     self.state.assertions = {
     }
 
@@ -227,23 +228,23 @@ class VisualPlannerPlugin(PluginBase):
 
     # TODO: change operators to suit new variable + knowledge structure
     def move_forward(self, state):
-        x,y,z = state.current_position
-        if (state.current_orientation == DIR_NORTH):
-            state.current_position = (x,y,z-1)
-        if (state.current_orientation == DIR_EAST):
-            state.current_position = (x+1,y,z)
-        if (state.current_orientation == DIR_SOUTH):
-            state.current_position = (x,y,z+1)
-        if (state.current_orientation == DIR_WEST):
-            state.current_position = (x-1,y,z)
+        x,y,z = state.agent['cur_xyz']
+        if (state.agent['cur_theta'] == DIR_NORTH):
+            state.agent['cur_xyz'] = (x,y,z-1)
+        if (state.agent['cur_theta'] == DIR_EAST):
+            state.agent['cur_xyz'] = (x+1,y,z)
+        if (state.agent['cur_theta'] == DIR_SOUTH):
+            state.agent['cur_xyz'] = (x,y,z+1)
+        if (state.agent['cur_theta'] == DIR_WEST):
+            state.agent['cur_xyz'] = (x-1,y,z)
         return state
 
     def turn_left(self, state):
-        state.current_orientation = look_left_deltas[state.current_orientation]
+        state.agent['cur_theta'] = look_left_deltas[state.agent['cur_theta']]
         return state
 
     def turn_right(self, state):
-        state.current_orientation = look_right_deltas[state.current_orientation]
+        state.agent['cur_theta'] = look_right_deltas[state.agent['cur_theta']]
         return state
 
     def break_block(self, state, target):
@@ -296,47 +297,47 @@ class VisualPlannerPlugin(PluginBase):
             state.targets[target]['reached'] = 1
             return []
         if state.path_found == 1 and state.targets[target]['reached'] == 0:
-            cur_x,cur_y,cur_z = state.current_position
+            cur_x,cur_y,cur_z = state.agent['cur_xyz']
             next_x,next_y,next_z = state.path[state.path_idx]
             if next_x > cur_x:
-                if state.current_orientation == DIR_EAST:
+                if state.agent['cur_theta'] == DIR_EAST:
                     state.path_idx = state.path_idx + 1
                     return [('move_forward',), ('navigate', target)]
-                elif state.current_orientation == DIR_WEST:
+                elif state.agent['cur_theta'] == DIR_WEST:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_NORTH:
+                elif state.agent['cur_theta'] == DIR_NORTH:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_SOUTH:
+                elif state.agent['cur_theta'] == DIR_SOUTH:
                     return [('turn_left',), ('navigate', target)]
             elif next_x < cur_x:
-                if state.current_orientation == DIR_WEST:
+                if state.agent['cur_theta'] == DIR_WEST:
                     state.path_idx = state.path_idx + 1
                     return [('move_forward',), ('navigate', target)]
-                elif state.current_orientation == DIR_SOUTH:
+                elif state.agent['cur_theta'] == DIR_SOUTH:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_EAST:
+                elif state.agent['cur_theta'] == DIR_EAST:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_NORTH:
+                elif state.agent['cur_theta'] == DIR_NORTH:
                     return [('turn_left',), ('navigate', target)]
             elif next_z > cur_z:
-                if state.current_orientation == DIR_SOUTH:
+                if state.agent['cur_theta'] == DIR_SOUTH:
                     state.path_idx = state.path_idx + 1
                     return [('move_forward',), ('navigate', target)]
-                elif state.current_orientation == DIR_EAST:
+                elif state.agent['cur_theta'] == DIR_EAST:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_NORTH:
+                elif state.agent['cur_theta'] == DIR_NORTH:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_WEST:
+                elif state.agent['cur_theta'] == DIR_WEST:
                     return [('turn_left',), ('navigate', target)]
             elif next_z < cur_z:
-                if state.current_orientation == DIR_NORTH:
+                if state.agent['cur_theta'] == DIR_NORTH:
                     state.path_idx = state.path_idx + 1
                     return [('move_forward',), ('navigate', target)]
-                elif state.current_orientation == DIR_WEST:
+                elif state.agent['cur_theta'] == DIR_WEST:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_SOUTH:
+                elif state.agent['cur_theta'] == DIR_SOUTH:
                     return [('turn_right',), ('navigate', target)]
-                elif state.current_orientation == DIR_EAST:
+                elif state.agent['cur_theta'] == DIR_EAST:
                     return [('turn_left',), ('navigate', target)]
             return []
         else:
@@ -350,47 +351,47 @@ class VisualPlannerPlugin(PluginBase):
             state.targets[target]['broken'] == 0):
             #gold block not yet broken
             #face the block, if already facing then break the block
-            cur_x,cur_y,cur_z = state.current_position
+            cur_x,cur_y,cur_z = state.agent['cur_xyz']
             next_x,next_y,next_z = state.targets[target]['location']
             if next_z < cur_z:
-                if state.current_orientation == DIR_NORTH:
+                if state.agent['cur_theta'] == DIR_NORTH:
                     state.targets[target]['broken'] = 1
                     return [('break_block',target), ('acquire',target)]
-                elif state.current_orientation == DIR_WEST:
+                elif state.agent['cur_theta'] == DIR_WEST:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_SOUTH:
+                elif state.agent['cur_theta'] == DIR_SOUTH:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_EAST:
+                elif state.agent['cur_theta'] == DIR_EAST:
                     return [('turn_left',), ('acquire',target)]
             if next_z > cur_z:
-                if state.current_orientation == DIR_SOUTH:
+                if state.agent['cur_theta'] == DIR_SOUTH:
                     state.targets[target]['broken'] = 1
                     return [('break_block',target), ('acquire',target)]
-                elif state.current_orientation == DIR_EAST:
+                elif state.agent['cur_theta'] == DIR_EAST:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_NORTH:
+                elif state.agent['cur_theta'] == DIR_NORTH:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_WEST:
+                elif state.agent['cur_theta'] == DIR_WEST:
                     return [('turn_left',), ('acquire',target)]
             if next_x < cur_x:
-                if state.current_orientation == DIR_WEST:
+                if state.agent['cur_theta'] == DIR_WEST:
                     state.targets[target]['broken'] = 1
                     return [('break_block',target), ('acquire',target)]
-                elif state.current_orientation == DIR_EAST:
+                elif state.agent['cur_theta'] == DIR_EAST:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_SOUTH:
+                elif state.agent['cur_theta'] == DIR_SOUTH:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_NORTH:
+                elif state.agent['cur_theta'] == DIR_NORTH:
                     return [('turn_left',), ('acquire',target)]
             if next_x > cur_x:
-                if state.current_orientation == DIR_EAST:
+                if state.agent['cur_theta'] == DIR_EAST:
                     state.targets[target]['broken'] = 1
                     return [('break_block',target), ('acquire',target)]
-                elif state.current_orientation == DIR_WEST:
+                elif state.agent['cur_theta'] == DIR_WEST:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_NORTH:
+                elif state.agent['cur_theta'] == DIR_NORTH:
                     return [('turn_right',), ('acquire',target)]
-                elif state.current_orientation == DIR_SOUTH:
+                elif state.agent['cur_theta'] == DIR_SOUTH:
                     return [('turn_left',), ('acquire',target)]
             return []
         else:
