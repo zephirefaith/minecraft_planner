@@ -68,7 +68,7 @@ class VisualPlannerPlugin(PluginBase):
             #     block_pos['x'],
             #     block_pos['y'],
             #     block_pos['z'])
-            # self.solve()
+            self.planner()
             # if self.room_plan is not None and len(self.room_plan) > 0:
             #     logger.info("plan succeeded")
             #     logger.info("total room plan: {}".format(self.room_plan))
@@ -100,7 +100,7 @@ class VisualPlannerPlugin(PluginBase):
         self.event.emit('sensor_tick_vision', data)
 
     def register_execution_timer(self, name, data):
-        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute_and_monitor)
+        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.metaplanner)
 
     def init_operators(self):
         self.op_translations = {
@@ -110,7 +110,7 @@ class VisualPlannerPlugin(PluginBase):
             'break_block': self.atomicoperators.operator_break_obstacle,}
 
     #########################################################################
-    # planner helper functions
+    # planner knowledge base
     #########################################################################
 
     def init_planner(self):
@@ -138,6 +138,7 @@ class VisualPlannerPlugin(PluginBase):
         self.state = hop.State('start_state')
         # TODO: convert everything into one directory which has 'resource', 'inventory' key all in one
         # variables in this minecraft world
+        self.world_is_okay = None
         self.state.objects = {
             'gold',
             'stone_block',
@@ -171,13 +172,10 @@ class VisualPlannerPlugin(PluginBase):
         self.goal_state.resources = {}
         self.goal_state.resources['gold'] = {
             'state': -1,
-            'hemisphere': 0,
+            'hemisphere': [-1,0,1],
         }
         self.goal_state.inventory = {}
         self.goal_state.inventory['gold'] = 1
-        #########################################################################
-        # planner knowledge base
-        #########################################################################
         self.assertions = {}
         self.assertions = {
             1: {
@@ -198,6 +196,25 @@ class VisualPlannerPlugin(PluginBase):
             # agent must be next to gold block to plan how to break it
         }
 
+    #########################################################################
+    # planner helper functions
+    #########################################################################
+
+    def continual_planner(self):
+        # a function which executes returned plan, senses
+        # percepts and decides if replanning should be done
+        # get initial plan
+        self.solve()
+        if not self.room_plan:
+            print("no plan to execute")
+            return
+        #start execution loop
+        while self.world_is_okay == 1:
+            self.execute()
+            self.perceive()
+            self.assertion_monitor()
+        if self.world_is_okay is None:
+            return
 
     def solve(self):
         start = time.time()
@@ -211,19 +228,14 @@ class VisualPlannerPlugin(PluginBase):
         print("result of hop.plan(): {}".format(self.room_plan))
         #print("last failed method label: {}".format(self.failed_method))
 
-    def execute_and_monitor(self):
-        # a function which executes returned plan, senses
-        # percepts and decides if replanning should be done
-        if not self.room_plan:
-            print("no plan to execute")
-            return
-        # we have a plan
-        # execute
+    def execute(self):
+        # will basically just execute action represented at self.plan_idx index in the plan
         plan_op = self.room_plan[self.plan_idx][0]
         self.op_translations[plan_op]()
         self.plan_idx += 1
-        # perceive
-        self.perceive()
+        return
+
+    def assertion_monitor(self):
         # monitor --> replan if assertion is fulfilled
         # later --> compare and analyze expected VS actual state
         if self.plan_idx == len(self.room_plan):
