@@ -50,7 +50,7 @@ class VisualPlannerPlugin(PluginBase):
 
     def handle_client_join(self, name, data):
         self.perceive()
-        logger.info("Agent's Percepts: {}".format(self.visual_percept))
+        logger.info("List of blocks: {}".format(self.visual_percept['blocks']))
 
     def handle_block_update(self, name, data):
         # gold block spawned in world. call the planner
@@ -60,22 +60,23 @@ class VisualPlannerPlugin(PluginBase):
             self.state.agent['cur_xyz'] = self.state.agent['start_xyz']
             self.state.agent['start_theta'] = mvu.get_nearest_direction(pos.yaw)
             self.state.agent['cur_theta'] = self.state.agent['start_theta']
-
             block_pos = data['location']
+            self.perceive()
+            for block in self.visual_percept['blocks']:
+                print([block," ",self.visual_percept['blocks'][block]])
             # self.state.targets['gold']['location'] = (
             #     block_pos['x'],
             #     block_pos['y'],
             #     block_pos['z'])
-
-            self.solve()
-            if self.room_plan is not None and len(self.room_plan) > 0:
-                logger.info("plan succeeded")
-                logger.info("total room plan: {}".format(self.room_plan))
-                self.event.emit("agent_planning_complete")
-                self.plan_idx = 0
-            else:
-                logger.info("plan failed")
-                self.event.emit("agent_planning_failed")
+            # self.solve()
+            # if self.room_plan is not None and len(self.room_plan) > 0:
+            #     logger.info("plan succeeded")
+            #     logger.info("total room plan: {}".format(self.room_plan))
+            #     self.event.emit("agent_planning_complete")
+            #     self.plan_idx = 0
+            # else:
+            #     logger.info("plan failed")
+            #     self.event.emit("agent_planning_failed")
 
     def handle_visual_percept(self, name, data):
         logger.debug("handling percept: {}".format(data))
@@ -90,7 +91,7 @@ class VisualPlannerPlugin(PluginBase):
     def request_visual_percept(self, x, z, orientation):
         data = {
             'x':x,
-            'y':13,
+            'y':14,
             'z':z,
             'pitch':0,
             'yaw':orientation,
@@ -141,6 +142,7 @@ class VisualPlannerPlugin(PluginBase):
             'gold',
             'stone_block',
         }
+        self.state.object_id = [41, 100]
         self.state.tools = {}
         # information structure for keeping track of world state
         self.state.resources = {}
@@ -148,6 +150,7 @@ class VisualPlannerPlugin(PluginBase):
             self.state.resources[obj] = {
                 'state':        None,
                 'hemisphere':   None,
+                'location':     None,
             }
         # information structure to keep track of self state
         # State = None: not located yet, 0: seen but not near, 1: near, -1: broken
@@ -161,17 +164,40 @@ class VisualPlannerPlugin(PluginBase):
         }
         self.state.inventory = {}
         for obj in self.state.objects:
-            self.state.inventory[obj] = {
-                self.state.inventory[obj] = 0,
-            }
+            self.state.inventory[obj] = 0
         # self.state.need_percept = 0
         #goal state
         self.goal_state = hop.State('goal_state')
+        self.goal_state.resources = {}
         self.goal_state.resources['gold'] = {
             'state': -1,
             'hemisphere': 0,
         }
+        self.goal_state.inventory = {}
         self.goal_state.inventory['gold'] = 1
+        #########################################################################
+        # planner knowledge base
+        #########################################################################
+        self.assertions = {}
+        self.assertions = {
+            1: {
+                'resources': {
+                    'gold': {
+                        'state': 0,
+                    },
+                },
+            },
+            # gold must be in sight to plan how to navigate
+            2: {
+                'resources': {
+                    'gold': {
+                        'state': 1,
+                    },
+                },
+            },
+            # agent must be next to gold block to plan how to break it
+        }
+
 
     def solve(self):
         start = time.time()
@@ -222,29 +248,6 @@ class VisualPlannerPlugin(PluginBase):
     # IDEA: Add learning once perceptual-dynamic-planner is setup
 
     #########################################################################
-    # planner knowledge base
-    #########################################################################
-
-    self.htn.assertions = {
-        1: {
-            'resources': {
-                'gold': {
-                    'state': 0,
-                },
-            },
-        },
-        # gold must be in sight to plan how to navigate
-        2: {
-            'resources': {
-                'gold': {
-                    'state': 1,
-                },
-            },
-        },
-        # agent must be next to gold block to plan how to break it
-    }
-
-    #########################################################################
     # operators
     #########################################################################
 
@@ -269,10 +272,16 @@ class VisualPlannerPlugin(PluginBase):
         return state
 
     def break_block(self, state, target):
-            state.resources[target]['state'] = -1
-            return state
-        else:
-            return False
+        state.resources[target]['state'] = -1
+        return state
+
+    def search(self, target):
+        target_id = self.object_id[target]
+        for coords in self.visual_percept['coords']:
+            if self.visual_percept['blocks'][coords] == target_id:
+                self.state.resources[target]['location'] = coords
+                return state
+        return False
 
     #########################################################################
     # methods
@@ -283,34 +292,24 @@ class VisualPlannerPlugin(PluginBase):
     def get_resource(self, state):
         print("calling get_resource")
         #multiple "check-points" to plan to and then replan/plan for the later part
-        if self.check_assertion(self.htn.assertions[1], state) == 1:
+        if self.check_assertion(self.assertions[1], state) == 1:
             return [('move_closer',)]
-        if self.check_assertion(self.htn.assertions[2], state) == 1:
+        if self.check_assertion(self.assertions[2], state) == 1:
             return [('acquire_gold')]
         return [('search_for_gold',)]
 
     def search_for_gold(self, state):
         # TODO: new logic for 360 deg rounds until gold is sighted
-        # i=0
-        # for coords in self.visual_percept['coords']:
-        #     i=i+1
-        #     if i == 1:
-        #         continue
-        #     else:
-        #         if self.visual_percept['blocks'][coords] == 35:
-        #             self.state.gold_in_sight = 1
-        #             break
-        # if self.state.gold_in_sight == 0:
-        #     self.state.need_percept = 1
-        #     print("Turning 360 deg clockwise to locate gold")
-        #     return ['turn_right']
-        # else:
-        #     print("gold found")
-        #     return []
+        if self.state.turn_start == None:
+            self.state.turn_start = self.state.agent['cur_theta']
+        elif self.state.turn_start == self.state.agent['cur_theta']:
+            return False
+        return [('turn_right',),('search','gold')]
         # if the current percept has gold --> continue to navigation
         # if not --> move and get percept again
 
     def move_closer(self, state):
+        return state
         # TODO: new logic for navigation as per visual percept
         # print("calling navigate with target: {}".format(target))
         # if state.path_idx == len(state.path):
