@@ -138,7 +138,10 @@ class VisualPlannerPlugin(PluginBase):
         self.state = hop.State('start_state')
         # TODO: convert everything into one directory which has 'resource', 'inventory' key all in one
         # variables in this minecraft world
-        self.world_is_okay = None
+        self.PLAN_STATUS = None
+        # 0: Rendered obsolete by assertions, 1: All okay, 2: Error
+        self.ASSERT_ID = None
+        # id of the assertion held true right now
         self.state.objects = {
             'gold',
             'stone_block',
@@ -205,16 +208,18 @@ class VisualPlannerPlugin(PluginBase):
         # percepts and decides if replanning should be done
         # get initial plan
         self.solve()
-        if not self.room_plan:
-            print("no plan to execute")
+        if self.PLAN_STATUS == 2:
+            logger.info("Could not find a plan. Planner exited with STATUS: 2")
             return
         #start execution loop
-        while self.world_is_okay == 1:
+        while self.PLAN_STATUS == 1:
             self.execute()
             self.perceive()
             self.assertion_monitor()
-        if self.world_is_okay is None:
-            return
+            if self.PLAN_STATUS == 0:
+                self.solve()
+            if self.PLAN_STATUS is None:
+                return
 
     def solve(self):
         start = time.time()
@@ -242,19 +247,37 @@ class VisualPlannerPlugin(PluginBase):
             self.room_plan = []
             self.init_state()
         return False
+        for assertion in self.assertions:
+            result = check_assertion(self.assertions[assertion], self.state)
+            if result == True:
+                self.PLAN_STATUS = 0
+                logger.info("assertion check came true. Assertion #{}".format(assertion))
+                return
 
     def check_assertion(self, assertion, state):
         # directories where assertions could be checked
         keys = ['resources', 'inventory']
-        result = 1
+        result = True
         if keys[0] in assertion:
             for obj in assertion[keys[0]]:
                 for condition in assertion[keys[0]][obj]:
-                    result = result & (state.resources[obj][condition] == assertion[keys[0]][obj][condition])
+                    if isinstance(assertion[keys[0]][obj][condition], list):
+                        temp_result = False
+                        for condition_n in assertion[keys[0]][obj][condition]:
+                            temp_result = temp_result | (state.resources[obj][condition] == condition_n)
+                        result = result & temp_result
+                    else:
+                        result = result & (state.resources[obj][condition] == assertion[keys[0]][obj][condition])
         if keys[1] in assertion:
             for obj in assertion[keys[1]]:
                 for condition in assertion[keys[0]][obj]:
-                    result = result & (state.inventory[obj][condition] == assertion[keys[1]][obj][condition])
+                    if isinstance(assertion[keys[1]][obj][condition], list):
+                        temp_result = False
+                        for condition_n in assertion[keys[1]][obj][condition]:
+                            temp_result = temp_result | (state.inventory[obj][condition] == condition_n)
+                        result = result & temp_result
+                    else:
+                        result = result & (state.inventory[obj][condition] == assertion[keys[1]][obj][condition])
         return result
 
     # IDEA: Add learning once perceptual-dynamic-planner is setup
