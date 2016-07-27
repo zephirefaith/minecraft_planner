@@ -12,7 +12,7 @@ from test_room_plugin import TestRoomPlugin, START_COORDS
 import utils.movement_utils as mvu
 from utils.constants import *
 
-ACTION_TICK_FREQUENCY = 1
+ACTION_TICK_FREQUENCY = 5
 
 #########################################################################
 # information
@@ -61,22 +61,14 @@ class VisualPlannerPlugin(PluginBase):
             self.state.agent['start_theta'] = mvu.get_nearest_direction(pos.yaw)
             self.state.agent['cur_theta'] = self.state.agent['start_theta']
             block_pos = data['location']
-            self.perceive()
-            for block in self.visual_percept['blocks']:
-                print([block," ",self.visual_percept['blocks'][block]])
+            # self.perceive()
+            # for block in self.visual_percept['blocks']:
+            #     print([block," ",self.visual_percept['blocks'][block]])
             # self.state.targets['gold']['location'] = (
             #     block_pos['x'],
             #     block_pos['y'],
             #     block_pos['z'])
-            self.planner()
-            # if self.room_plan is not None and len(self.room_plan) > 0:
-            #     logger.info("plan succeeded")
-            #     logger.info("total room plan: {}".format(self.room_plan))
-            #     self.event.emit("agent_planning_complete")
-            #     self.plan_idx = 0
-            # else:
-            #     logger.info("plan failed")
-            #     self.event.emit("agent_planning_failed")
+            self.continual_planner()
 
     def handle_visual_percept(self, name, data):
         logger.debug("handling percept: {}".format(data))
@@ -100,14 +92,16 @@ class VisualPlannerPlugin(PluginBase):
         self.event.emit('sensor_tick_vision', data)
 
     def register_execution_timer(self, name, data):
-        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.metaplanner)
+        logger.info("triggered timer")
+        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute)
 
     def init_operators(self):
         self.op_translations = {
-            'move_forward': self.atomicoperators.operator_move,
-            'turn_left': self.atomicoperators.operator_look_left,
-            'turn_right': self.atomicoperators.operator_look_right,
-            'break_block': self.atomicoperators.operator_break_obstacle,}
+            'move_forward'  : self.atomicoperators.operator_move,
+            'turn_left'     : self.atomicoperators.operator_look_left,
+            'turn_right'    : self.atomicoperators.operator_look_right,
+            'break_block'   : self.atomicoperators.operator_break_obstacle,
+            'search_placeholder'    : self.search,}
 
     #########################################################################
     # planner knowledge base
@@ -121,7 +115,8 @@ class VisualPlannerPlugin(PluginBase):
             self.move_forward,
             self.turn_left,
             self.turn_right,
-            self.break_block)
+            self.break_block,
+            self.search_placeholder,)
         #    self.equip_agent)
         hop.print_operators(hop.get_operators())
         # for the main task
@@ -142,11 +137,16 @@ class VisualPlannerPlugin(PluginBase):
         # 0: Rendered obsolete by assertions, 1: All okay, 2: Error
         self.ASSERT_ID = None
         # id of the assertion held true right now
+        self.plan_idx = 0
+        self.state.turn_start = None
         self.state.objects = {
             'gold',
             'stone_block',
         }
-        self.state.object_id = [41, 100]
+        self.state.object_id = {
+            'gold'          : 41,
+            'stone_block'   : 100
+        }
         self.state.tools = {}
         # information structure for keeping track of world state
         self.state.resources = {}
@@ -208,18 +208,25 @@ class VisualPlannerPlugin(PluginBase):
         # percepts and decides if replanning should be done
         # get initial plan
         self.solve()
+        if self.room_plan is not None and len(self.room_plan) > 0:
+            self.PLAN_STATUS = 1
+            self.plan_idx = 0
+            logger.info("agent planning completed")
+            logger.info("total room plan: {}".format(self.room_plan))
+            self.event.emit("agent_planning_complete")
+        else:
+            logger.info("plan failed")
+            self.event.emit("agent_planning_failed")
         if self.PLAN_STATUS == 2:
             logger.info("Could not find a plan. Planner exited with STATUS: 2")
             return
         #start execution loop
-        while self.PLAN_STATUS == 1:
-            self.execute()
-            self.perceive()
-            self.assertion_monitor()
-            if self.PLAN_STATUS == 0:
-                self.solve()
-            if self.PLAN_STATUS is None:
-                return
+        # while self.PLAN_STATUS == 1:
+        #     self.assertion_monitor()
+        #     if self.PLAN_STATUS == 0:
+        #         self.solve()
+        #     if self.PLAN_STATUS is None:
+        #         return
 
     def solve(self):
         start = time.time()
@@ -227,30 +234,39 @@ class VisualPlannerPlugin(PluginBase):
                             [('get_resource',)],
                             hop.get_operators(),
                             hop.get_methods(),
-                            verbose=1)
+                            verbose=3)
         end = time.time()
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
         print("result of hop.plan(): {}".format(self.room_plan))
         #print("last failed method label: {}".format(self.failed_method))
 
     def execute(self):
+        logger.info("In agent executor")
         # will basically just execute action represented at self.plan_idx index in the plan
-        plan_op = self.room_plan[self.plan_idx][0]
-        self.op_translations[plan_op]()
+        if self.plan_idx == len(self.room_plan):
+            logger.info("complete plan executed")
+            self.room_plan = []
+            self.init_state()
+            return
+        plan_op = self.room_plan[self.plan_idx]
+        if len(plan_op)>1:
+            logger.info("Detected tuple of function and arguments")
+            self.op_translations[plan_op[0]](plan_op[1:])
+        else:
+            self.op_translations[plan_op[0]]()
+        self.perceive()
         self.plan_idx += 1
         return
 
     def assertion_monitor(self):
         # monitor --> replan if assertion is fulfilled
         # later --> compare and analyze expected VS actual state
-        if self.plan_idx == len(self.room_plan):
-            self.room_plan = []
-            self.init_state()
         return False
         for assertion in self.assertions:
             result = check_assertion(self.assertions[assertion], self.state)
             if result == True:
                 self.PLAN_STATUS = 0
+                self.ASSERT_ID = assertion
                 logger.info("assertion check came true. Assertion #{}".format(assertion))
                 return
 
@@ -279,6 +295,20 @@ class VisualPlannerPlugin(PluginBase):
                     else:
                         result = result & (state.inventory[obj][condition] == assertion[keys[1]][obj][condition])
         return result
+
+    def search(self, arguments):
+        logger.info("calling search action")
+        target = arguments[0]
+        target_id = self.state.object_id[target]
+        for coords in self.visual_percept['coords']:
+            if self.visual_percept['blocks'][coords] == target_id:
+                logger.info("found the gold block")
+                self.state.resources[target]['location'] = coords
+                self.PLAN_STATUS = 0
+                return
+        logger.info("couldn't find the gold block")
+        self.PLAN_STATUS = 0
+        return
 
     # IDEA: Add learning once perceptual-dynamic-planner is setup
 
@@ -310,13 +340,9 @@ class VisualPlannerPlugin(PluginBase):
         state.resources[target]['state'] = -1
         return state
 
-    def search(self, target):
-        target_id = self.object_id[target]
-        for coords in self.visual_percept['coords']:
-            if self.visual_percept['blocks'][coords] == target_id:
-                self.state.resources[target]['location'] = coords
-                return state
-        return False
+    def search_placeholder(self, state, target):
+        # just a PyHop placeholder for actual function
+        return state
 
     #########################################################################
     # methods
@@ -327,10 +353,10 @@ class VisualPlannerPlugin(PluginBase):
     def get_resource(self, state):
         print("calling get_resource")
         #multiple "check-points" to plan to and then replan/plan for the later part
-        if self.check_assertion(self.assertions[1], state) == 1:
+        if self.ASSERT_ID == 1:
             return [('move_closer',)]
-        if self.check_assertion(self.assertions[2], state) == 1:
-            return [('acquire_gold')]
+        if self.ASSERT_ID == 2:
+            return [('acquire_gold',)]
         return [('search_for_gold',)]
 
     def search_for_gold(self, state):
@@ -338,12 +364,15 @@ class VisualPlannerPlugin(PluginBase):
         if self.state.turn_start == None:
             self.state.turn_start = self.state.agent['cur_theta']
         elif self.state.turn_start == self.state.agent['cur_theta']:
+            logger.info("Unsuccessful search for gold.")
             return False
-        return [('turn_right',),('search','gold')]
+        return [('turn_right',),('search_placeholder','gold')]
         # if the current percept has gold --> continue to navigation
         # if not --> move and get percept again
 
-    def move_closer(self, state):
+    def move_closer(self, state, target):
+        forward_moves = self.state.resources[target]['location'][1]
+        side_moves = self.state.resources[target]['location'][0]
         return state
         # TODO: new logic for navigation as per visual percept
         # print("calling navigate with target: {}".format(target))
