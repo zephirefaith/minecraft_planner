@@ -12,7 +12,7 @@ from test_room_plugin import TestRoomPlugin, START_COORDS
 import utils.movement_utils as mvu
 from utils.constants import *
 
-ACTION_TICK_FREQUENCY = 5
+ACTION_TICK_FREQUENCY = 1.5
 
 #########################################################################
 # information
@@ -35,6 +35,7 @@ class VisualPlannerPlugin(PluginBase):
         'agent_visual_percept': 'handle_visual_percept',
         'world_block_update': 'handle_block_update',
         'agent_planning_complete': 'register_execution_timer',
+        'execution_success' : 'call_continual_planner',
     }
 
     #########################################################################
@@ -93,7 +94,11 @@ class VisualPlannerPlugin(PluginBase):
 
     def register_execution_timer(self, name, data):
         logger.info("triggered timer")
-        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute)
+        self.timers.reg_event_timer(ACTION_TICK_FREQUENCY, self.execute, len(self.room_plan))
+
+    def call_continual_planner(self, name, data):
+        logger.info("calling continual planner again, after execution")
+        self.continual_planner()
 
     def init_operators(self):
         self.op_translations = {
@@ -134,11 +139,12 @@ class VisualPlannerPlugin(PluginBase):
         # TODO: convert everything into one directory which has 'resource', 'inventory' key all in one
         # variables in this minecraft world
         self.PLAN_STATUS = None
-        # 0: Rendered obsolete by assertions, 1: All okay, 2: Error
+        # 0: Rendered obsolete by assertions, 1: All okay, 2: Error, need replanning or introspection
         self.ASSERT_ID = None
         # id of the assertion held true right now
+        self.state.target = 'gold'
         self.plan_idx = 0
-        self.state.turn_start = None
+        self.state.turn_num = 0
         self.state.objects = {
             'gold',
             'stone_block',
@@ -195,6 +201,14 @@ class VisualPlannerPlugin(PluginBase):
                         'state': 1,
                     },
                 },
+                'inventory': {
+                    'gold': 0
+                },
+            },
+            3: {
+                'inventory': {
+                    'gold': 1,
+                },
             },
             # agent must be next to gold block to plan how to break it
         }
@@ -207,6 +221,11 @@ class VisualPlannerPlugin(PluginBase):
         # a function which executes returned plan, senses
         # percepts and decides if replanning should be done
         # get initial plan
+        if self.ASSERT_ID == 3:
+            logger.info("SUCCESSFULLY ACQUIRED GOLD")
+            self.init_state()
+            return
+        self.assertion_monitor()
         self.solve()
         if self.room_plan is not None and len(self.room_plan) > 0:
             self.PLAN_STATUS = 1
@@ -234,7 +253,7 @@ class VisualPlannerPlugin(PluginBase):
                             [('get_resource',)],
                             hop.get_operators(),
                             hop.get_methods(),
-                            verbose=3)
+                            verbose=1)
         end = time.time()
         print("******* total time for planning: {} ms*******".format(1000*(end-start)))
         print("result of hop.plan(): {}".format(self.room_plan))
@@ -243,11 +262,6 @@ class VisualPlannerPlugin(PluginBase):
     def execute(self):
         logger.info("In agent executor")
         # will basically just execute action represented at self.plan_idx index in the plan
-        if self.plan_idx == len(self.room_plan):
-            logger.info("complete plan executed")
-            self.room_plan = []
-            self.init_state()
-            return
         plan_op = self.room_plan[self.plan_idx]
         if len(plan_op)>1:
             logger.info("Detected tuple of function and arguments")
@@ -256,14 +270,18 @@ class VisualPlannerPlugin(PluginBase):
             self.op_translations[plan_op[0]]()
         self.perceive()
         self.plan_idx += 1
+        if self.plan_idx == len(self.room_plan):
+            logger.info("complete plan executed")
+            self.room_plan = []
+            self.event.emit("execution_success")
+            return
         return
 
     def assertion_monitor(self):
         # monitor --> replan if assertion is fulfilled
         # later --> compare and analyze expected VS actual state
-        return False
         for assertion in self.assertions:
-            result = check_assertion(self.assertions[assertion], self.state)
+            result = self.check_assertion(self.assertions[assertion], self.state)
             if result == True:
                 self.PLAN_STATUS = 0
                 self.ASSERT_ID = assertion
@@ -286,14 +304,7 @@ class VisualPlannerPlugin(PluginBase):
                         result = result & (state.resources[obj][condition] == assertion[keys[0]][obj][condition])
         if keys[1] in assertion:
             for obj in assertion[keys[1]]:
-                for condition in assertion[keys[0]][obj]:
-                    if isinstance(assertion[keys[1]][obj][condition], list):
-                        temp_result = False
-                        for condition_n in assertion[keys[1]][obj][condition]:
-                            temp_result = temp_result | (state.inventory[obj][condition] == condition_n)
-                        result = result & temp_result
-                    else:
-                        result = result & (state.inventory[obj][condition] == assertion[keys[1]][obj][condition])
+                result = result & (state.inventory[obj] == assertion[keys[1]][obj])
         return result
 
     def search(self, arguments):
@@ -304,10 +315,11 @@ class VisualPlannerPlugin(PluginBase):
             if self.visual_percept['blocks'][coords] == target_id:
                 logger.info("found the gold block")
                 self.state.resources[target]['location'] = coords
+                self.state.resources[target]['state'] = 0
                 self.PLAN_STATUS = 0
                 return
         logger.info("couldn't find the gold block")
-        self.PLAN_STATUS = 0
+        self.PLAN_STATUS = 2
         return
 
     # IDEA: Add learning once perceptual-dynamic-planner is setup
@@ -336,8 +348,8 @@ class VisualPlannerPlugin(PluginBase):
         state.agent['cur_theta'] = look_right_deltas[state.agent['cur_theta']]
         return state
 
-    def break_block(self, state, target):
-        state.resources[target]['state'] = -1
+    def break_block(self, state):
+        state.resources[self.state.target]['state'] = -1
         return state
 
     def search_placeholder(self, state, target):
@@ -354,131 +366,52 @@ class VisualPlannerPlugin(PluginBase):
         print("calling get_resource")
         #multiple "check-points" to plan to and then replan/plan for the later part
         if self.ASSERT_ID == 1:
-            return [('move_closer',)]
+            logger.info("Planning to move closer")
+            return [('move_closer','gold',)]
         if self.ASSERT_ID == 2:
-            return [('acquire_gold',)]
+            logger.info("Planning to acquire gold")
+            return [('acquire_gold','gold')]
+        logger.info("Planning to search for gold")
         return [('search_for_gold',)]
 
     def search_for_gold(self, state):
         # TODO: new logic for 360 deg rounds until gold is sighted
-        if self.state.turn_start == None:
-            self.state.turn_start = self.state.agent['cur_theta']
-        elif self.state.turn_start == self.state.agent['cur_theta']:
-            logger.info("Unsuccessful search for gold.")
+        if self.state.turn_num == 0:
+            self.state.turn_num = self.state.turn_num + 1
+            return [('search_placeholder', 'gold')]
+        elif self.state.turn_num == 4:
+            logger.info("Unsuccessful 360 deg search for gold.")
             return False
+        self.state.turn_num = self.state.turn_num + 1
         return [('turn_right',),('search_placeholder','gold')]
         # if the current percept has gold --> continue to navigation
         # if not --> move and get percept again
 
     def move_closer(self, state, target):
+        logger.info("in method: move_closer")
         forward_moves = self.state.resources[target]['location'][1]
         side_moves = self.state.resources[target]['location'][0]
-        return state
-        # TODO: new logic for navigation as per visual percept
-        # print("calling navigate with target: {}".format(target))
-        # if state.path_idx == len(state.path):
-        #     print("setting "+target+" to reached")
-        #     state.targets[target]['reached'] = 1
-        #     return []
-        # if state.path_found == 1 and state.targets[target]['reached'] == 0:
-        #     cur_x,cur_y,cur_z = state.agent['cur_xyz']
-        #     next_x,next_y,next_z = state.path[state.path_idx]
-        #     if next_x > cur_x:
-        #         if state.agent['cur_theta'] == DIR_EAST:
-        #             state.path_idx = state.path_idx + 1
-        #             return [('move_forward',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_WEST:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_NORTH:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_SOUTH:
-        #             return [('turn_left',), ('navigate', target)]
-        #     elif next_x < cur_x:
-        #         if state.agent['cur_theta'] == DIR_WEST:
-        #             state.path_idx = state.path_idx + 1
-        #             return [('move_forward',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_SOUTH:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_EAST:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_NORTH:
-        #             return [('turn_left',), ('navigate', target)]
-        #     elif next_z > cur_z:
-        #         if state.agent['cur_theta'] == DIR_SOUTH:
-        #             state.path_idx = state.path_idx + 1
-        #             return [('move_forward',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_EAST:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_NORTH:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_WEST:
-        #             return [('turn_left',), ('navigate', target)]
-        #     elif next_z < cur_z:
-        #         if state.agent['cur_theta'] == DIR_NORTH:
-        #             state.path_idx = state.path_idx + 1
-        #             return [('move_forward',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_WEST:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_SOUTH:
-        #             return [('turn_right',), ('navigate', target)]
-        #         elif state.agent['cur_theta'] == DIR_EAST:
-        #             return [('turn_left',), ('navigate', target)]
-        #     return []
-        # else:
-        #     return False
+        temp_plan = []
+        if side_moves != 0:
+            for i in range(forward_moves):
+                temp_plan.append(('move_forward',))
+        else:
+            for i in range(forward_moves-1):
+                temp_plan.append(('move_forward',))
+        if side_moves>0:
+            temp_plan.append(('turn_right',))
+        elif side_moves<0:
+            temp_plan.append(('turn_left',))
+        for i in range(abs(side_moves)-1):
+            temp_plan.append(('move_forward',))
+        state.resources[target]['state'] = 1
+        return temp_plan
 
     def acquire_resource(self, state, target):
         print("calling acquire with target: {}".format(target))
-        if state.inventory[target] == 1:
-            return []
         if state.resources[target]['state'] == 1:
-            #gold block not yet broken
-            #face the block, if already facing then break the block
-            # TODO: probably agent will always face the block depending upon how navigation is implemented
-            cur_x,cur_y,cur_z = state.agent['cur_xyz']
-            next_x,next_y,next_z = state.targets[target]['location']
-            if next_z < cur_z:
-                if state.agent['cur_theta'] == DIR_NORTH:
-                    state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_left',), ('acquire_gold',target)]
-            if next_z > cur_z:
-                if state.agent['cur_theta'] == DIR_SOUTH:
-                    state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_left',), ('acquire_gold',target)]
-            if next_x < cur_x:
-                if state.agent['cur_theta'] == DIR_WEST:
-                    state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_EAST:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_left',), ('acquire_gold',target)]
-            if next_x > cur_x:
-                if state.agent['cur_theta'] == DIR_EAST:
-                    state.targets[target]['broken'] = 1
-                    return [('break_block',target), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_WEST:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_NORTH:
-                    return [('turn_right',), ('acquire_gold',target)]
-                elif state.agent['cur_theta'] == DIR_SOUTH:
-                    return [('turn_left',), ('acquire_gold',target)]
-            return []
+            return [('break_block',), ('acquire_gold',target)]
         else:
             # gold block is broken, but not yet acquired
-            state.targets[target]['acquired'] = 1
-            return [('move_forward',), ('acquire_gold', target)]
+            self.state.inventory[target] = 1
+            return [('move_forward',)]
