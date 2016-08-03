@@ -19,7 +19,10 @@ from percept_monitor_plugin import PerceptMonitorPlugin
 
 from atomic_operators_plugin import AtomicOperatorsPlugin
 from test_atomic_operators import TestAtomicOperatorsPlugin
-from test_planner_plugin import TestPlannerPlugin
+
+#from wall_planner_plugin import WallPlannerPlugin
+from visual_planner_plugin import VisualPlannerPlugin
+#from test_planner_plugin import TestPlannerPlugin
 
 # spock utilities and plugins
 from spockbot import Client
@@ -27,7 +30,7 @@ from spockbot.plugins import default_plugins
 #sys.path.insert(0, os.path.abspath('../SpockBot-Extra'))
 #from plugins.echo_packet import EchoPacketPlugin
 
-__author__ = 'Bradley Sheneman'
+__author__ = ['Bradley Sheneman', 'Priyam Parashar']
 
 logger = logging.getLogger('spockbot')
 logger.setLevel(logging.INFO)
@@ -58,7 +61,9 @@ plugins.append(('PerceptMonitor', PerceptMonitorPlugin))
 plugins.append(('AtomicOperators', AtomicOperatorsPlugin))
 #plugins.append(('TestAtomicOperators', TestAtomicOperatorsPlugin))
 
-plugins.append(('TestPlanner', TestPlannerPlugin))
+#plugins.append(('WallPlanner', WallPlannerPlugin))
+plugins.append(('VisualPlanner', VisualPlannerPlugin))
+#plugins.append(('TestPlanner', TestPlannerPlugin))
 
 #plugins.append(('echo', EchoPacketPlugin))
 #plugins.append(('TestAgent', TestAgentPlugin))

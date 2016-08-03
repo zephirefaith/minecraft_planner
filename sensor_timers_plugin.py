@@ -16,6 +16,7 @@ logger = logging.getLogger('spockbot')
 # allows sensors to run at different freq but still be coordinated
 VISION_SENSOR_FREQUENCY = 1
 MOTION_SENSOR_FREQUENCY = 0.6
+INVENTORY_SENSOR_FREQUENCY = 1
 
 @pl_announce('SensorTimers')
 class SensorTimersPlugin(PluginBase):
@@ -28,9 +29,6 @@ class SensorTimersPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(SensorTimersPlugin, self).__init__(ploader, settings)
 
-    def motion_timer_tick(self):
-        self.event.emit('sensor_tick_motion')
-
     def vision_timer_tick(self):
         pos = self.clientinfo.position
         data = {
@@ -42,6 +40,13 @@ class SensorTimersPlugin(PluginBase):
         }
         self.event.emit('sensor_tick_vision', data)
 
+    def motion_timer_tick(self):
+        self.event.emit('sensor_tick_motion')
+
+    def inventory_timer_tick(self):
+        self.event.emit('sensor_tick_inventory')
+
     def handle_client_join(self, name, data):
         self.timers.reg_event_timer(VISION_SENSOR_FREQUENCY, self.vision_timer_tick)
         self.timers.reg_event_timer(MOTION_SENSOR_FREQUENCY, self.motion_timer_tick)
+        self.timers.reg_event_timer(INVENTORY_SENSOR_FREQUENCY, self.inventory_timer_tick)
